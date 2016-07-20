@@ -13,7 +13,18 @@ Node::~Node()
 {
 }
 
-void Node::__updateIMatrix(int ch) {
+void Node::__updateIMatrix(Edge t_edge) {
+	int ch = edges_weight[t_edge];
+
+// 	vector<Node*>::iterator i;
+// 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+// 		float t_dist = this->getDistance(**i);
+// 		if (t_dist < (*i)->getIMatrix()->getData(ch, 0)) {
+// 			(*i)->getIMatrix()->getData(ch, 0) = t_dist;
+// 			(*i)->__updateIF();
+// 		}
+// 	}
+		
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		float t_dist = this->getDistance(**i);
@@ -21,22 +32,12 @@ void Node::__updateIMatrix(int ch) {
 			(*i)->getIMatrix()->getData(ch, 0) = t_dist;
 			(*i)->__updateIF();
 		}
+		t_dist = m_nodes.at(target(t_edge, *m_conGraph))->getDistance(**i);
+		if (t_dist < (*i)->getIMatrix()->getData(ch, 0)) {
+			(*i)->getIMatrix()->getData(ch, 0) = t_dist;
+			(*i)->__updateIF();
+		}
 	}
-		
-// 	vector<Node*>::iterator i;
-// 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-// 		vector<Edge>::iterator j;
-// 		int p1 = this->m_id;
-// 		int p2 = (*i)->getId();
-// 		for (j = (*i)->getEdges().begin(); j != (*i)->getEdges().end(); j++) {
-// 			float t_dist = this->getDistance(**i);
-// 			if (t_dist < (*i)->getIMatrix()->getData(ch, 0)) {
-// 				(*i)->getIMatrix()->getData(ch, 0) = t_dist;
-// 				(*i)->__updateIF();
-// 			}				
-// 			else {}
-// 		}			
-// 	}
 }
 
 void Node::__initIMatrix() {
@@ -72,7 +73,7 @@ float Node::getDistance(Node m){
 void Node::__updateIF() {
 	for (int ch = 0; ch < 11; ch++) {
 		for (int i = 1; i < 12; i++) {
-			m_IMatrix->getData(ch, i) = __getIF(m_IMatrix->getData(i - 1, 0), ch, i);
+			m_IMatrix->getData(ch, i) = __getIF(m_IMatrix->getData(i - 1, 0), ch, i - 1);
 		}
 	}
 }
@@ -128,12 +129,12 @@ void Node::channelAssignment() {
 	}
 	for (i = m_edges.begin(); i != m_edges.end(); i++) {
 		int s = source(*i, *m_conGraph);
-		int p = target(*i, *m_conGraph);
+		int targetNode = target(*i, *m_conGraph);
 		int p_id = m_id;
 		if (edges_weight[*i] < 0) {
-			int ch = __chooseRadio(*m_nodes.at(target(*i, *m_conGraph)));
+			int ch = __chooseRadio(*m_nodes.at(targetNode));
 			edges_weight[*i] = ch;
-			__updateIMatrix(ch);
+			__updateIMatrix(*i);
 		}
 	}
 	

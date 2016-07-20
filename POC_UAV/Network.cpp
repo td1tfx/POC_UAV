@@ -41,9 +41,9 @@ int Network::__initRandom() {
 
 
 void Network::initGraph() {
-	if (__initRandom()) {		
-		m_conGraph = new Graph;
+	if (__initGrid()) {
 		//cuTime = 0;
+		m_conGraph = new Graph;
 		__createNeighborGraph();
 		__updatePri();
 	}
@@ -123,11 +123,16 @@ void Network::__createNeighborGraph() {
 
 void Network::printCH() {
 	edge_iter ei, ei_end;
+	int connecty_num = 0;
 	for (tie(ei, ei_end) = edges(*m_conGraph); ei != ei_end; ++ei)
 	{
 		std::cout << edges_index[*ei] << "CH:" << edges_weight[*ei] << "---";
+		if (edges_weight[*ei] >= 0) {
+			connecty_num++;
+		}
 	}
 	std::cout << endl;
+	std::cout << "connecty_num =" << connecty_num << endl;
 }
 
 

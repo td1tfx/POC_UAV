@@ -22,7 +22,7 @@ typedef graph_traits<Graph>::out_edge_iterator out_edge_iter;
 typedef graph_traits<Graph>::adjacency_iterator adj_iter;
 
 const static double IR[6] = { 13.26,9.21,7.59,4.69,3.84,0 };
-const static double ThresholdIF = 1;
+static double ThresholdIF = 1;
 using namespace std;
 class Compare;
 
@@ -49,7 +49,7 @@ private:
 	property_map<Graph, edge_index_t>::type edges_index = get(edge_index, *m_conGraph);
 	property_map<Graph, edge_weight_t>::type edges_weight = get(edge_weight, *m_conGraph);
 
-	void __updateIMatrix(int ch);
+	void __updateIMatrix(Edge t_edge);
 	void __initIMatrix();
 	void __updateIF();
 	bool __isCAValid(int ch);
