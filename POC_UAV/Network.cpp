@@ -41,7 +41,7 @@ int Network::__initRandom() {
 
 
 void Network::initGraph() {
-	if (__initGrid()) {		
+	if (__initRandom()) {		
 		m_conGraph = new Graph;
 		//cuTime = 0;
 		__createNeighborGraph();
@@ -66,8 +66,8 @@ void Network::run()
 	while (!m_priNodes.empty()) {
 		//(*i)->printIMatrix();
 		auto t_node = (Node*)m_priNodes.top();		
-		std::cout << t_node->getNeigherNodes().size() << endl;
-		//t_node->channelAssignment();
+		std::cout << "node:" << t_node->getId() << "->edges:" << t_node->getNeigherNodes().size() << endl;
+		t_node->channelAssignment();
 		t_node->printIMatrix();
 		m_priNodes.pop();		
 	}
@@ -79,25 +79,20 @@ void Network::__createNeighborGraph() {
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		vector<Node*>::iterator j;
-		for (j = m_nodes.begin(); j != m_nodes.end(); j++) {
-			if (i == j) {
-				continue;
-			}
-			else {
-				if ((*i)->getDistance(**j) <= IR[0]) {
-					int m = (*i)->getId();
-					int n = (*j)->getId();
-					string iFirst = toString((*i)->getId());
-					string jFirst = toString((*j)->getId());
-					string linkEdge = iFirst + "->" + jFirst;
-					Edge ed;
-					ed = (add_edge((*i)->getId(), (*j)->getId(), *m_conGraph)).first;
-					edges_index[ed] = linkEdge;
-					edges_weight[ed] = -1;
-					//cout << linkEdge << "; " << (*i)->getPos().first << "," << (*i)->getPos().second << 
-					//"; "<< (*j)->getPos().first << "," << (*j)->getPos().second << ", weight=" << (*j)->getPackageNum() << endl;
-
-				}
+		//int p_id = (*i)->getId()
+		for (j = i + 1; j != m_nodes.end(); j++) {
+			if ((*i)->getDistance(**j) <= IR[0]) {
+				int m = (*i)->getId();
+				int n = (*j)->getId();
+				string iFirst = toString((*i)->getId());
+				string jFirst = toString((*j)->getId());
+				string linkEdge = iFirst + "->" + jFirst;
+				Edge ed;
+				ed = (add_edge((*i)->getId(), (*j)->getId(), *m_conGraph)).first;
+				edges_index[ed] = linkEdge;
+				edges_weight[ed] = -1;
+				//cout << linkEdge << "; " << (*i)->getPos().first << "," << (*i)->getPos().second << 
+				//"; "<< (*j)->getPos().first << "," << (*j)->getPos().second << ", weight=" << (*j)->getPackageNum() << endl;
 			}
 		}
 	}
@@ -130,7 +125,7 @@ void Network::printCH() {
 	edge_iter ei, ei_end;
 	for (tie(ei, ei_end) = edges(*m_conGraph); ei != ei_end; ++ei)
 	{
-		std::cout << edges_index[*ei] << "CH:" << edges_weight[*ei] << ";";
+		std::cout << edges_index[*ei] << "CH:" << edges_weight[*ei] << "---";
 	}
 	std::cout << endl;
 }

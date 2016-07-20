@@ -14,23 +14,29 @@ Node::~Node()
 }
 
 void Node::__updateIMatrix(int ch) {
-	m_IMatrix->getData(ch, 0) = 0;
-	m_IMatrix->getData(ch, ch) = INFINITY;
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-		vector<int>::iterator j;
-		for (j = (*i)->getRadios().begin(); j != (*i)->getRadios().end(); j++) {
-			if (*j == ch) {
-				int t_dist = getDistance(**i);
-				if (t_dist < (*i)->getIMatrix()->getData(ch, 0)) {
-					(*i)->getIMatrix()->getData(ch, 0) = t_dist;
-					(*i)->__updateIF(ch);
-				}				
-			}
-			else {}
-		}			
+		float t_dist = this->getDistance(**i);
+		if (t_dist < (*i)->getIMatrix()->getData(ch, 0)) {
+			(*i)->getIMatrix()->getData(ch, 0) = t_dist;
+			(*i)->__updateIF();
+		}
 	}
-	int a;
+		
+// 	vector<Node*>::iterator i;
+// 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+// 		vector<Edge>::iterator j;
+// 		int p1 = this->m_id;
+// 		int p2 = (*i)->getId();
+// 		for (j = (*i)->getEdges().begin(); j != (*i)->getEdges().end(); j++) {
+// 			float t_dist = this->getDistance(**i);
+// 			if (t_dist < (*i)->getIMatrix()->getData(ch, 0)) {
+// 				(*i)->getIMatrix()->getData(ch, 0) = t_dist;
+// 				(*i)->__updateIF();
+// 			}				
+// 			else {}
+// 		}			
+// 	}
 }
 
 void Node::__initIMatrix() {
@@ -63,13 +69,15 @@ float Node::getDistance(Node m){
 	return distance;
 }
 
-void Node::__updateIF(int ch) {
-	for (int i = 1; i < 11; i++) {
-		m_IMatrix->getData(ch, i) = __getIF(m_IMatrix->getData(ch, 0), ch, i);
+void Node::__updateIF() {
+	for (int ch = 0; ch < 11; ch++) {
+		for (int i = 1; i < 12; i++) {
+			m_IMatrix->getData(ch, i) = __getIF(m_IMatrix->getData(i - 1, 0), ch, i);
+		}
 	}
 }
 
-float Node::__getIF(int dist, int ch1, int ch2) {
+float Node::__getIF(float dist, int ch1, int ch2) {
 	float t_dist = dist;
 	int t_dRange = abs(ch2 - ch1);
 	if (t_dist == 0 && t_dRange < 5) {
@@ -92,7 +100,9 @@ int Node::__chooseRadio(Node n) {
 	for (int i = 0; i < 11; i++) {
 		totalIF[i] = 0;
 		for (int j = 1; j < 12; j++) {
-			totalIF[i] = totalIF[i] + m_IMatrix->getData(i, j) + n.getIMatrix()->getData(i, j);
+			int p1 = m_IMatrix->getData(i, j);
+			int p2 = n.getIMatrix()->getData(i, j);
+			totalIF[i] = totalIF[i] + p1 + p2;
 		}
 		if(totalIF[i] < min) {
 			min = totalIF[i];
@@ -117,13 +127,13 @@ void Node::channelAssignment() {
 		return;
 	}
 	for (i = m_edges.begin(); i != m_edges.end(); i++) {
-		//int s = source(**i, *m_conGraph);
+		int s = source(*i, *m_conGraph);
+		int p = target(*i, *m_conGraph);
+		int p_id = m_id;
 		if (edges_weight[*i] < 0) {
 			int ch = __chooseRadio(*m_nodes.at(target(*i, *m_conGraph)));
-			if (ch >= 0) {
-				edges_weight[*i] = ch;
-				__updateIMatrix(ch);
-			}			
+			edges_weight[*i] = ch;
+			__updateIMatrix(ch);
 		}
 	}
 	

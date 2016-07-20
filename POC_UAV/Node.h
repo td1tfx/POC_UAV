@@ -7,12 +7,13 @@
 #include "boost/graph/dijkstra_shortest_paths.hpp"
 #include <time.h>
 
+#define INFINITY   99999999;
 using namespace std;
 using namespace boost;
 
 typedef property<edge_index_t, string, property<edge_weight_t, int>> EdgeProperty;
 typedef property<vertex_index_t, int> VertexIndexProperty;
-typedef adjacency_list<vecS, vecS, directedS, VertexIndexProperty, EdgeProperty> Graph;
+typedef adjacency_list<vecS, vecS, undirectedS, VertexIndexProperty, EdgeProperty> Graph;
 typedef graph_traits<Graph>::edge_descriptor Edge;
 typedef graph_traits<Graph>::edge_iterator edge_iter;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
@@ -41,7 +42,7 @@ private:
 	Graph *m_conGraph;
 	vector<Node*> m_neigherNodes;
 	vector<Node*> m_nodes;
-	vector<int> m_radios;
+	//vector<int> m_radios;
 	vector<Edge> m_edges;
 
 	property_map<Graph, vertex_index_t>::type node_index = get(vertex_index, *m_conGraph);
@@ -50,9 +51,9 @@ private:
 
 	void __updateIMatrix(int ch);
 	void __initIMatrix();
-	void __updateIF(int ch);
+	void __updateIF();
 	bool __isCAValid(int ch);
-	float __getIF(int dist, int ch1, int ch2);
+	float __getIF(float dist, int ch1, int ch2);
 	int __chooseRadio(Node n);
 
 
@@ -64,17 +65,17 @@ public:
 
 	void setId(int id) { m_id = id; }
 	void setPos(int x, int y, int z) { m_x = x; m_y = y; m_z = z; }
-	void setRadios(int radios[]) {setRadios(radios[0], radios[1], radios[2]);}
-	void setRamdomRadios() {
-		int rnd = rand() / sizeof(chSpcArray);
-		setRadios(chSpcArray[rnd]);
-	}
-	void setRadios(int r0, int r1, int r2) {
-		m_radios.clear();
-		m_radios.push_back(r0);
-		m_radios.push_back(r1);
-		m_radios.push_back(r2);
-	}
+// 	void setRadios(int radios[]) {setRadios(radios[0], radios[1], radios[2]);}
+// 	void setRamdomRadios() {
+// 		int rnd = rand() / sizeof(chSpcArray);
+// 		setRadios(chSpcArray[rnd]);
+// 	}
+// 	void setRadios(int r0, int r1, int r2) {
+// 		m_radios.clear();
+// 		m_radios.push_back(r0);
+// 		m_radios.push_back(r1);
+// 		m_radios.push_back(r2);
+// 	}
 	void setMNodes(vector<Node*> t) {
 		m_nodes = t;
 	}
@@ -85,7 +86,7 @@ public:
 
 
 	int& getId() { return m_id; }
-	vector<int>& getRadios() { return m_radios; }
+	//vector<int>& getRadios() { return m_radios; }
 	float& getX() { return m_x; }
 	float& getY() { return m_y; }
 	float& getZ() { return m_z; }
