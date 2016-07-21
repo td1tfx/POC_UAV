@@ -18,6 +18,7 @@ private:
 
 	int __initGrid();
 	int __initRandom();
+	int __initRandomFromFile();
 	void __createNeighborGraph();
 	void __updatePri();
 
@@ -25,9 +26,11 @@ public:
 
 	Network();
 	~Network();
-	void run();
+	void runPOC();
+	void runNormal();
 
 	void initGraph();
+	void initGraphByFile();
 	string toString(int a);
 	void printCH();
 };

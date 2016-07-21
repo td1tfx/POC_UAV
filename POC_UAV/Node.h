@@ -1,13 +1,14 @@
 #pragma once
 #include "neural/MatrixFunctions.h"
 #include "Config.h"
+#include "neural/lib/libconvert.h"
 #include "boost/graph/adjacency_list.hpp"
 #include "boost/graph/graph_traits.hpp"
 #include "boost/graph/edge_list.hpp"
 #include "boost/graph/dijkstra_shortest_paths.hpp"
 #include <time.h>
 
-#define INFINITY   99999999;
+#define INFINITY   9999999;
 using namespace std;
 using namespace boost;
 
@@ -31,12 +32,7 @@ class Node
 private:
 	friend class compare;
 	int m_id;
-	int chSpcArray[35][3] = { { 0, 0, 0 },{ 0, 1, 0 },{ 6, 1, 0 },{ 7, 1, 0 },{ 8, 1, 0 },{ 9, 1, 0 },
-	{ 10, 1, 0 },{ 11, 1, 0 },{ 0, 2, 0 },{ 7, 2, 0 },{ 8, 2, 0 },{ 9, 2, 0 },
-	{ 10, 2, 0 },{ 11, 2, 0 },{ 0, 3, 0 },{ 8, 3, 0 },{ 9, 3, 0 },{ 10, 3, 0 },
-	{ 11, 3, 0 },{ 0, 4, 0 },{ 9, 4, 0 },{ 10, 4, 0 },{ 11, 4, 0 },{ 0, 5, 0 },
-	{ 10, 5, 0 },{ 11, 5, 0 },{ 0, 6, 0 },{ 11, 6, 0 },{ 0, 7, 0 },
-	{ 0, 8, 0 },{ 0, 9, 0 },{ 0, 10, 0 },{ 0, 11, 0 },{ 1, 6, 11 } };
+	int m_linkNum;
 	float m_x, m_y, m_z;
 	d_matrix* m_IMatrix;
 	Graph *m_conGraph;
@@ -50,11 +46,15 @@ private:
 	property_map<Graph, edge_weight_t>::type edges_weight = get(edge_weight, *m_conGraph);
 
 	void __updateIMatrix(Edge t_edge);
+	void __updateIMatrixNormal(Edge t_edge);
 	void __initIMatrix();
 	void __updateIF();
+	void __updateIFNormal();
 	bool __isCAValid(int ch);
 	float __getIF(float dist, int ch1, int ch2);
+	float __getIFNormal(float dist, int ch1, int ch2);
 	int __chooseRadio(Node n);
+	int __chooseRadioNormal(Node n);
 
 
 public:
@@ -86,6 +86,7 @@ public:
 
 
 	int& getId() { return m_id; }
+	int& getLinkNum() { return m_linkNum; }
 	//vector<int>& getRadios() { return m_radios; }
 	float& getX() { return m_x; }
 	float& getY() { return m_y; }
@@ -104,6 +105,7 @@ public:
 
 	float getDistance(Node m);
 	void channelAssignment();
+	void channelAssignmentNormal();
 };
 
 class Compare
