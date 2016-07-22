@@ -59,6 +59,7 @@ int Network::__initRandom() {
 				//t_node->setRamdomRadios();
 				m_nodes.push_back(t_node);
 			}
+			fclose(fout);
 			return m_nodes.size();
 	}else{
 		return -1;
@@ -140,7 +141,7 @@ void Network::runNormal()
 		auto t_node = (Node*)m_priNodes.top();
 		std::cout << "node:" << t_node->getId() << "->edges:" << t_node->getNeigherNodes().size() << endl;
 		t_node->channelAssignmentNormal();
-		t_node->printIMatrix();
+		t_node->printOCMatrix();
 		m_priNodes.pop();
 	}
 	printCH();
@@ -206,7 +207,7 @@ void Network::printCH() {
 	int connecty_num = 0;
 	for (tie(ei, ei_end) = edges(*m_conGraph); ei != ei_end; ++ei)
 	{
-		std::cout << edges_index[*ei] << "CH:" << edges_weight[*ei] << "---";
+		std::cout << edges_index[*ei] << "CH:" << edges_weight[*ei] + 1 << "---";
 		if (edges_weight[*ei] >= 0) {
 			connecty_num++;
 		}

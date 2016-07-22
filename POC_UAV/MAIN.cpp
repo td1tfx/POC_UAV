@@ -4,7 +4,7 @@
 int main(int argc, char *argv[]) {
 	srand(time(NULL));
 	auto net = new Network;
-	net->initGraphByFile();
+	net->initGraph();
 	net->runPOC();
 	auto net1 = new Network;
 	net1->initGraphByFile();

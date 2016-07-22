@@ -35,6 +35,7 @@ private:
 	int m_linkNum;
 	float m_x, m_y, m_z;
 	d_matrix* m_IMatrix;
+	d_matrix* m_OCMatrix;
 	Graph *m_conGraph;
 	vector<Node*> m_neigherNodes;
 	vector<Node*> m_nodes;
@@ -48,11 +49,10 @@ private:
 	void __updateIMatrix(Edge t_edge);
 	void __updateIMatrixNormal(Edge t_edge);
 	void __initIMatrix();
+	void __initOCMatrix();
 	void __updateIF();
-	void __updateIFNormal();
 	bool __isCAValid(int ch);
 	float __getIF(float dist, int ch1, int ch2);
-	float __getIFNormal(float dist, int ch1, int ch2);
 	int __chooseRadio(Node n);
 	int __chooseRadioNormal(Node n);
 
@@ -62,6 +62,7 @@ public:
 	Node();
 	~Node();
 	void printIMatrix();
+	void printOCMatrix();
 
 	void setId(int id) { m_id = id; }
 	void setPos(int x, int y, int z) { m_x = x; m_y = y; m_z = z; }
@@ -92,6 +93,7 @@ public:
 	float& getY() { return m_y; }
 	float& getZ() { return m_z; }
 	d_matrix* getIMatrix() { return m_IMatrix; }
+	d_matrix* getOCMatrix() { return m_OCMatrix; }
 	vector<Node*>& getNeigherNodes() {
 		return m_neigherNodes;
 	}
