@@ -14,16 +14,33 @@ Network::~Network()
 int Network::__initGrid() {
 	//int nodeNum = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
 	//m_nodes->resize(0);
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
+	int GW = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn() - 1;
+	for (int i = 0; i <Config::getInstance()->getMaxRow(); i++) {
+		for (int j = 0; j < Config::getInstance()->getMaxColumn(); j++) {
 			Node* t_node = new Node();
-			t_node->setId(i * 5 + j);
+			t_node->setId(i * Config::getInstance()->getMaxColumn() + j);
 			t_node->setPos(i * 10, j * 10, 0);
+			t_node->getGWNum() = GW;
 			//t_node->setRamdomRadios();
 			m_nodes.push_back(t_node);
+			if (t_node->isOuterNode()) {
+				m_outerNodes.push_back(t_node);
+			}
 		}
 	}
-	return m_nodes.size();
+	m_nodes.at(GW)->getIsGW() = true;
+	if (m_nodes.begin() != m_nodes.end()) {
+		if (Config::getInstance()->isFullMod()) {
+			m_inDataSize = m_nodes.size();
+		}
+		else {
+			m_inDataSize = m_outerNodes.size();
+		}
+		m_inData = new double[m_inDataSize];
+		memset(m_inData, 0, m_inDataSize * sizeof(m_inData));
+		return m_nodes.size();
+	}
+	else return -1;
 }
 
 int Network::__initRandom() {
@@ -91,24 +108,24 @@ int Network::__initRandomFromFile() {
 
 
 void Network::initGraph() {
-	if (__initRandom()) {
+	if (__initGrid()) {
 		//cuTime = 0;
 		m_conGraph = new Graph;
 		__createNeighborGraph();
-		__updatePri();
+		__updatePribyLinkNum();
 	}
 }
 
 void Network::initGraphByFile() {
-	if (__initRandomFromFile()) {
+	if (__initGrid()) {
 		//cuTime = 0;
 		m_conGraph = new Graph;
 		__createNeighborGraph();
-		__updatePri();
+		__updatePribyLinkNum();
 	}
 }
 
-void Network::__updatePri() {
+void Network::__updatePribyLinkNum() {
 	if (!m_priNodes.empty()) {
 		std::cout << "wrong!!!priNodes is not empty!" << endl;
 		return;
@@ -117,6 +134,20 @@ void Network::__updatePri() {
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		m_priNodes.push(*i);
 		(*i)->setMNodes(m_nodes);
+		(*i)->setOuterNodes(m_outerNodes);
+	}
+}
+
+void Network::__updatePribyLoad() {
+	if (!m_priNodes.empty()) {
+		std::cout << "wrong!!!priNodes is not empty!" << endl;
+		return;
+	}
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		m_priNodes.push(*i);
+		(*i)->setMNodes(m_nodes);
+		(*i)->setOuterNodes(m_outerNodes);
 	}
 }
 
@@ -218,6 +249,120 @@ void Network::printCH() {
 	std::cout << "connecty_num =" << connecty_num << endl;
 }
 
+bool Network::__getShortestPath(int destId) {
+
+	Vertex s = vertex(destId, *m_conGraph);
+	std::vector<Vertex> parent(num_vertices(*m_conGraph));
+	std::vector<int> distMap(num_vertices(*m_conGraph));
+	dijkstra_shortest_paths(*m_conGraph, s, predecessor_map(boost::make_iterator_property_map(parent.begin(),
+		get(boost::vertex_index, *m_conGraph))).distance_map(boost::make_iterator_property_map(distMap.begin(), get(boost::vertex_index, *m_conGraph))));
+
+	float sum = 0;
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		if ((*i)->getId() == destId) {
+		}
+		else {
+			if (distMap.at((*i)->getId()) == NULL) {
+				cout << "error!! Node=" << (*i)->getId() << "distMap = NULL, packageNum =" << (*i)->getPackageNum() << endl;
+				return false;
+			}
+			else {
+				vector<int>* path = new vector<int>;
+				int p = (*i)->getId();
+				(*i)->getRoutingMatrix()->getData(destId, p) = 1;
+				string linkId = toString(p);
+				string routingId = "";
+				int num = 0;
+				while (p != destId) {
+					p = parent.at(p);
+					(*i)->getRoutingMatrix()->getData(destId, p) = 1;
+					(*i)->getShortPath()->getData(destId, num) = p;
+					linkId = linkId + "->" + toString(p);
+					num++;
+				}
+				// print the path vector
+				//cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
+				/* print the routing vector
+				for (int j = 0; j < m_nodes->size(); j++) {
+				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+				}
+				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
+				*/
+			}
+		}
+	}
+	return true;
+}
+
+//OSPF
+void Network::getAllShortestPath() {
+	__updateNeighborGraph();
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		(*i)->getRoutingMatrix()->initData(0);
+		(*i)->getShortPath()->initData(-1);
+	}
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		if (__getShortestPath((*i)->getId())) {
+			//cout << "finished destination:" << (*i)->getId() << endl;
+		}
+	}
+	__getNodesLoad();
+}
+
+void Network::__updateNeighborGraph() {
+	//std::cout << "edges(g) = ";
+	edge_iter ei, ei_end;
+	int weight;
+	for (tie(ei, ei_end) = edges(*m_conGraph); ei != ei_end; ei++) {
+		weight = m_nodes.at(target(*ei, *m_conGraph))->getPackageNum();
+		edges_weight[*ei] = weight + 1;
+	}
+}
+
+void Network::__getNodesLoad() {
+	//runOneSignalRound(isTrained);
+	int maxPackageNum = 1;
+	vector<Node*>::iterator i;
+	if (Config::getInstance()->isFullMod()) {
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			if ((*i)->getPackageNum() + 1 > maxPackageNum) {
+				maxPackageNum = (*i)->getPackageNum() + 1;
+			}
+		}
+		for (int i = 0; i < m_inDataSize; i++) {
+			double pkNum = m_nodes.at(i)->getPackageNum();
+			double a;
+			if (!m_nodes.at(i)->isOuterNode()) {
+				a = rand() % 1000 / 1000;
+			}
+			else {
+				a = pkNum / maxPackageNum;
+			}
+			//a = pkNum / maxPackageNum;
+			m_inData[i] = a;
+		}
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			(*i)->getInData() == m_inData;
+		}
+	}
+	else {
+		for (i = m_outerNodes.begin(); i != m_outerNodes.end(); i++) {
+			if ((*i)->getPackageNum() + 1 > maxPackageNum) {
+				maxPackageNum = (*i)->getPackageNum() + 1;
+			}
+		}
+		for (int i = 0; i < m_inDataSize; i++) {
+			double pkNum = m_outerNodes.at(i)->getPackageNum();
+			double a = pkNum / maxPackageNum;
+			m_inData[i] = a;
+		}
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			(*i)->getInData() == m_inData;
+		}
+	}
+}
 
 string Network::toString(int a)
 {

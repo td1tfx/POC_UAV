@@ -1,6 +1,8 @@
 #pragma once
 #include "neural/MatrixFunctions.h"
 #include "Config.h"
+#include "Package.h"
+#include <queue>
 #include "neural/lib/libconvert.h"
 #include "boost/graph/adjacency_list.hpp"
 #include "boost/graph/graph_traits.hpp"
@@ -33,19 +35,32 @@ private:
 	friend class compare;
 	int m_id;
 	int m_linkNum;
+	int m_packageCount;
+	int m_GWNum;
+	float m_nodeTime;
 	float m_x, m_y, m_z;
 	d_matrix* m_IMatrix;
 	d_matrix* m_OCMatrix;
+	d_matrix* m_routingMatrix;	//routing Matrix with binary
+	d_matrix* m_shortRouting;   //routing Matrix with decimal
 	Graph *m_conGraph;
 	vector<Node*> m_neigherNodes;
 	vector<Node*> m_nodes;
-	//vector<int> m_radios;
+	vector<Node*> m_outerNodes;
 	vector<Edge> m_edges;
+	std::queue<Package*> m_qServe;
+	std::queue<Package*> m_qFinished;
+	bool m_isGW;
+	bool m_isOuterNode;
+	double* m_inData;
+	double* m_outData;
+
 
 	property_map<Graph, vertex_index_t>::type node_index = get(vertex_index, *m_conGraph);
 	property_map<Graph, edge_index_t>::type edges_index = get(edge_index, *m_conGraph);
 	property_map<Graph, edge_weight_t>::type edges_weight = get(edge_weight, *m_conGraph);
 
+	void __init();
 	void __updateIMatrix(Edge t_edge);
 	void __updateIMatrixNormal(Edge t_edge);
 	void __initIMatrix();
@@ -66,40 +81,30 @@ public:
 
 	void setId(int id) { m_id = id; }
 	void setPos(int x, int y, int z) { m_x = x; m_y = y; m_z = z; }
-// 	void setRadios(int radios[]) {setRadios(radios[0], radios[1], radios[2]);}
-// 	void setRamdomRadios() {
-// 		int rnd = rand() / sizeof(chSpcArray);
-// 		setRadios(chSpcArray[rnd]);
-// 	}
-// 	void setRadios(int r0, int r1, int r2) {
-// 		m_radios.clear();
-// 		m_radios.push_back(r0);
-// 		m_radios.push_back(r1);
-// 		m_radios.push_back(r2);
-// 	}
-	void setMNodes(vector<Node*> t) {
-		m_nodes = t;
-	}
+	void setMNodes(vector<Node*> t) { m_nodes = t; }
+	void setOuterNodes(vector<Node*> t) { m_outerNodes = t; }
 	void setMcongraph(Graph* t) {
 		m_conGraph = t;
 	}
 
 
-
+	int& getGWNum() { return m_GWNum; }
 	int& getId() { return m_id; }
 	int& getLinkNum() { return m_linkNum; }
+	int getPackageNum() { return m_qServe.size();}
+	bool& getIsGW() { return m_isGW; }
+	bool& isOuterNode() { return m_isOuterNode; }
 	//vector<int>& getRadios() { return m_radios; }
 	float& getX() { return m_x; }
 	float& getY() { return m_y; }
 	float& getZ() { return m_z; }
+	double*& getInData() { return m_inData; }
 	d_matrix* getIMatrix() { return m_IMatrix; }
 	d_matrix* getOCMatrix() { return m_OCMatrix; }
-	vector<Node*>& getNeigherNodes() {
-		return m_neigherNodes;
-	}
-	vector<Edge>& getEdges() {
-		return m_edges;
-	}
+	d_matrix*& getRoutingMatrix() { return m_routingMatrix; }
+	d_matrix*& getShortPath() {	return m_shortRouting;	}
+	vector<Node*>& getNeigherNodes() { return m_neigherNodes; }
+	vector<Edge>& getEdges() { return m_edges; }
 	bool lessthan(const Node* node) const
 	{
 		return m_neigherNodes.size() < ((Node*)node)->getNeigherNodes().size();
@@ -108,6 +113,9 @@ public:
 	float getDistance(Node m);
 	void channelAssignment();
 	void channelAssignmentNormal();
+	void generatePackage();
+	void generatePaPerRound();
+
 };
 
 class Compare

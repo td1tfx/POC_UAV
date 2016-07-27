@@ -9,6 +9,16 @@ Node::Node()
 	m_OCMatrix = new d_matrix(3, 2, -2);
 	__initOCMatrix();
 	m_linkNum = 0;
+	m_packageCount = 0;
+	m_nodeTime = 0;
+	int maxRow = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
+	int maxColumn = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
+	m_routingMatrix = new d_matrix(maxRow, maxColumn);
+	m_shortRouting = new d_matrix(maxRow, maxColumn);
+	m_routingMatrix->initData(0);
+	m_shortRouting->initData(-1);
+	m_inData = nullptr;
+	__init();
 }
 
 
@@ -31,6 +41,22 @@ void Node::__updateIMatrix(Edge t_edge) {
 			(*i)->__updateIF();
 		}
 	}
+}
+
+void Node::__init() {
+	if (m_id/Config::getInstance()->getMaxRow() == 0 || m_id / Config::getInstance()->getMaxRow() == Config::getInstance()->getMaxRow() - 1
+		|| m_id % Config::getInstance()->getMaxRow() == 0 || m_id % Config::getInstance()->getMaxRow() == Config::getInstance()->getMaxColumn() - 1) {
+		m_isOuterNode = true;
+		//paGenerateRate = rand() % (int)Config::getInstance()->getMaxGenerateRate() + 1;
+	}
+	else {
+		m_isOuterNode = false;
+		//paGenerateRate = 0;
+	}
+	for (int i = 0; i < Config::getInstance()->getMaxGenerateRate(); i++) {
+		//generatePackage();
+	}
+
 }
 
 void Node::__updateIMatrixNormal(Edge t_edge) {
@@ -87,18 +113,18 @@ void Node::__initOCMatrix() {
 void Node::printIMatrix() {
 	for (int i = 0; i < 11; i++) {
 		for (int j = 0; j < 12; j++) {
-			cout << m_IMatrix->getData(i, j) << " ";
+			std::cout << m_IMatrix->getData(i, j) << " ";
 		}
-		cout << endl;
+		std::cout << endl;
 	}
 }
 
 void Node::printOCMatrix() {
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 2; j++) {
-			cout << m_OCMatrix->getData(i, j) << " ";
+			std::cout << m_OCMatrix->getData(i, j) << " ";
 		}
-		cout << endl;
+		std::cout << endl;
 	}
 }
 
@@ -111,7 +137,7 @@ float Node::getDistance(Node m){
 void Node::__updateIF() {
 	for (int ch = 0; ch < 11; ch++) {
 		for (int i = 1; i < 12; i++) {
-			m_IMatrix->getData(ch, i) = __getIF(m_IMatrix->getData(i - 1, 0), ch, i - 1);
+			m_IMatrix->getData(ch, i) += __getIF(m_IMatrix->getData(i - 1, 0), ch, i - 1);
 		}
 	}
 }
@@ -216,3 +242,31 @@ void Node::channelAssignmentNormal() {
 	}
 }
 
+void Node::generatePaPerRound() {
+	double pNumPer = (double)(Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
+	double gRatePerRound = Config::getInstance()->getMaxGenerateRate() / pNumPer;
+	int threshold = rand() % 2000 * gRatePerRound;
+	int ge_random = rand() % 1000;
+	while (ge_random < threshold) {
+		generatePackage();
+		ge_random = ge_random + 1000;
+	}
+}
+
+
+
+void Node::generatePackage() {
+	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
+	Package *m_package = new Package(pid, m_nodeTime);
+	int dest = m_GWNum;
+	m_package->setSource(m_id);
+	m_package->setDestination(dest);
+	m_package->setGenerateTime(m_nodeTime);
+	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
+	m_package->setPathSize(size);
+	for (int i = 0; i < size; i++) {
+		m_package->getPathData(i) = m_shortRouting->getData(dest, i);
+	}
+	m_qServe.push(m_package);
+	m_packageCount++;
+}

@@ -116,6 +116,7 @@
   <ItemGroup>
     <ClInclude Include="Config.h" />
     <ClInclude Include="Network.h" />
+    <ClInclude Include="NetworkOption.h" />
     <ClInclude Include="neural\ActiveFunctions.h" />
     <ClInclude Include="neural\config.h" />
     <ClInclude Include="neural\lib\cblas.h" />
@@ -132,6 +133,7 @@
     <ClInclude Include="neural\NeuralNet.h" />
     <ClInclude Include="neural\Option.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="Package.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Config.cpp" />
@@ -147,6 +149,7 @@
     <ClCompile Include="neural\NeuralLayer.cpp" />
     <ClCompile Include="neural\NeuralNet.cpp" />
     <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Package.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\RODL\RODL\neural\lib\cblas.a" />
