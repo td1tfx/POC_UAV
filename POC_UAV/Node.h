@@ -17,9 +17,13 @@ using namespace boost;
 typedef property<edge_index_t, string, property<edge_weight_t, int>> EdgeProperty;
 typedef property<vertex_index_t, int> VertexIndexProperty;
 typedef adjacency_list<vecS, vecS, undirectedS, VertexIndexProperty, EdgeProperty> Graph;
+typedef adjacency_list<vecS, vecS, directedS, VertexIndexProperty, EdgeProperty> DGraph;
 typedef graph_traits<Graph>::edge_descriptor Edge;
+typedef graph_traits<DGraph>::edge_descriptor DEdge;
 typedef graph_traits<Graph>::edge_iterator edge_iter;
+typedef graph_traits<DGraph>::edge_iterator Dedge_iter;
 typedef graph_traits<Graph>::vertex_descriptor Vertex;
+typedef graph_traits<DGraph>::vertex_descriptor DVertex;
 typedef graph_traits<Graph>::vertex_iterator vertex_iter;
 typedef graph_traits<Graph>::out_edge_iterator out_edge_iter;
 typedef graph_traits<Graph>::adjacency_iterator adj_iter;
@@ -38,6 +42,7 @@ private:
 	int m_packageCount;
 	int m_GWNum;
 	float m_nodeTime;
+	float m_packageRate;
 	float m_x, m_y, m_z;
 	d_matrix* m_IMatrix;
 	d_matrix* m_OCMatrix;
@@ -58,7 +63,9 @@ private:
 
 	property_map<Graph, vertex_index_t>::type node_index = get(vertex_index, *m_conGraph);
 	property_map<Graph, edge_index_t>::type edges_index = get(edge_index, *m_conGraph);
-	property_map<Graph, edge_weight_t>::type edges_weight = get(edge_weight, *m_conGraph);
+	//property_map<DGraph, edge_index_t>::type edges_index_d = get(edge_index, *m_dGraph);
+	property_map<Graph, edge_weight_t>::type edges_weight_channel = get(edge_weight, *m_conGraph);
+	//property_map<DGraph, edge_weight_t>::type edges_weight_load = get(edge_weight, *m_dGraph);
 
 	void __init();
 	void __updateIMatrix(Edge t_edge);
@@ -94,10 +101,10 @@ public:
 	int getPackageNum() { return m_qServe.size();}
 	bool& getIsGW() { return m_isGW; }
 	bool& isOuterNode() { return m_isOuterNode; }
-	//vector<int>& getRadios() { return m_radios; }
 	float& getX() { return m_x; }
 	float& getY() { return m_y; }
 	float& getZ() { return m_z; }
+	float& getPackageRate() { return m_packageRate; }
 	double*& getInData() { return m_inData; }
 	d_matrix* getIMatrix() { return m_IMatrix; }
 	d_matrix* getOCMatrix() { return m_OCMatrix; }

@@ -12,10 +12,13 @@ private:
 	vector<Node*> m_nodes;
 	vector<Node*> m_outerNodes;
 	priority_queue<Node*, vector<Node*>, Compare> m_priNodes;
-	Graph *m_conGraph;
+	Graph *m_conGraph;		//graph of channel assignment
+	DGraph *m_dGraph;		//graph of routing
 	property_map<Graph, vertex_index_t>::type node_index = get(vertex_index, *m_conGraph);
 	property_map<Graph, edge_index_t>::type edges_index = get(edge_index, *m_conGraph);
-	property_map<Graph, edge_weight_t>::type edges_weight = get(edge_weight, *m_conGraph);
+	property_map<DGraph, edge_index_t>::type edges_index_d = get(edge_index, *m_dGraph);
+	property_map<Graph, edge_weight_t>::type edges_weight_channel = get(edge_weight, *m_conGraph);
+	property_map<DGraph, edge_weight_t>::type edges_weight_load = get(edge_weight, *m_dGraph);
 	double* m_inData;
 	int m_inDataSize;
 
@@ -39,6 +42,7 @@ public:
 	void initGraph();
 	void initGraphByFile();
 	void printCH();
+	void printPath();
 	void getAllShortestPath();
 
 

@@ -111,6 +111,7 @@ void Network::initGraph() {
 	if (__initGrid()) {
 		//cuTime = 0;
 		m_conGraph = new Graph;
+		m_dGraph = new DGraph;
 		__createNeighborGraph();
 		__updatePribyLinkNum();
 	}
@@ -120,6 +121,7 @@ void Network::initGraphByFile() {
 	if (__initGrid()) {
 		//cuTime = 0;
 		m_conGraph = new Graph;
+		m_dGraph = new DGraph;
 		__createNeighborGraph();
 		__updatePribyLinkNum();
 	}
@@ -162,6 +164,7 @@ void Network::runPOC()
 		m_priNodes.pop();		
 	}
 	printCH();
+	printPath();
 	system("pause");
 }
 
@@ -176,6 +179,7 @@ void Network::runNormal()
 		m_priNodes.pop();
 	}
 	printCH();
+	printPath();
 	system("pause");
 }
 
@@ -200,10 +204,18 @@ void Network::__createNeighborGraph() {
 				string iFirst = toString((*i)->getId());
 				string jFirst = toString((*j)->getId());
 				string linkEdge = iFirst + "->" + jFirst;
+				string linkEdge2 = jFirst + "->" + iFirst;
 				Edge ed;
+				DEdge ed2,ed3;
 				ed = (add_edge((*i)->getId(), (*j)->getId(), *m_conGraph)).first;
+				ed2 = (add_edge((*i)->getId(), (*j)->getId(), *m_dGraph)).first;
+				ed3 = (add_edge((*j)->getId(), (*i)->getId(), *m_dGraph)).first;
 				edges_index[ed] = linkEdge;
-				edges_weight[ed] = -1;
+				edges_weight_channel[ed] = -1;
+				edges_index_d[ed2] = linkEdge;
+				edges_index_d[ed3] = linkEdge2;
+				edges_weight_load[ed2] = (*j)->getPackageNum() + 1;
+				edges_weight_load[ed3] = (*i)->getPackageNum() + 1;
 			}
 		}
 	}
@@ -238,8 +250,8 @@ void Network::printCH() {
 	int connecty_num = 0;
 	for (tie(ei, ei_end) = edges(*m_conGraph); ei != ei_end; ++ei)
 	{
-		std::cout << edges_index[*ei] << "CH:" << edges_weight[*ei] + 1 << "---";
-		if (edges_weight[*ei] >= 0) {
+		std::cout << edges_index[*ei] << "CH:" << edges_weight_channel[*ei] + 1 << "---";
+		if (edges_weight_channel[*ei] >= 0) {
 			connecty_num++;
 		}
 		edge_num++;
@@ -249,13 +261,32 @@ void Network::printCH() {
 	std::cout << "connecty_num =" << connecty_num << endl;
 }
 
+void Network::printPath() {
+	Dedge_iter ei, ei_end;
+	int edge_num = 0;
+	int connecty_num = 0;
+	for (tie(ei, ei_end) = edges(*m_dGraph); ei != ei_end; ++ei)
+	{
+		std::cout << edges_index_d[*ei] << "Path:" << edges_weight_load[*ei] << "---";
+		if (edges_weight_load[*ei] >= 1) {
+			connecty_num++;
+		}
+		edge_num++;
+	}
+	std::cout << endl;
+	std::cout << "edge_num =" << edge_num << endl;
+	std::cout << "connecty_num =" << connecty_num << endl;
+}
+
+
 bool Network::__getShortestPath(int destId) {
 
-	Vertex s = vertex(destId, *m_conGraph);
-	std::vector<Vertex> parent(num_vertices(*m_conGraph));
-	std::vector<int> distMap(num_vertices(*m_conGraph));
-	dijkstra_shortest_paths(*m_conGraph, s, predecessor_map(boost::make_iterator_property_map(parent.begin(),
-		get(boost::vertex_index, *m_conGraph))).distance_map(boost::make_iterator_property_map(distMap.begin(), get(boost::vertex_index, *m_conGraph))));
+	DVertex s = vertex(destId, *m_dGraph);
+	std::vector<DVertex> parent(num_vertices(*m_dGraph));
+	std::vector<int> distMap(num_vertices(*m_dGraph));
+	weight_map(boost::make_iterator_property_map(distMap.begin(), get(boost::vertex_index, *m_dGraph)));
+	dijkstra_shortest_paths(*m_dGraph, s, predecessor_map(boost::make_iterator_property_map(parent.begin(),
+		get(boost::vertex_index, *m_dGraph))).distance_map(boost::make_iterator_property_map(distMap.begin(), get(boost::vertex_index, *m_dGraph))));
 
 	float sum = 0;
 	vector<Node*>::iterator i;
@@ -283,12 +314,11 @@ bool Network::__getShortestPath(int destId) {
 				}
 				// print the path vector
 				//cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
-				/* print the routing vector
-				for (int j = 0; j < m_nodes->size(); j++) {
-				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
-				}
-				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
-				*/
+// 				print the routing vector
+// 				for (int j = 0; j < m_nodes->size(); j++) {
+// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+// 				}
+// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
 			}
 		}
 	}
@@ -313,11 +343,11 @@ void Network::getAllShortestPath() {
 
 void Network::__updateNeighborGraph() {
 	//std::cout << "edges(g) = ";
-	edge_iter ei, ei_end;
-	int weight;
-	for (tie(ei, ei_end) = edges(*m_conGraph); ei != ei_end; ei++) {
-		weight = m_nodes.at(target(*ei, *m_conGraph))->getPackageNum();
-		edges_weight[*ei] = weight + 1;
+	Dedge_iter ei, ei_end;
+	int weight2;
+	for (tie(ei, ei_end) = edges(*m_dGraph); ei != ei_end; ei++) {
+		weight2 = m_nodes.at(target(*ei, *m_dGraph))->getPackageNum();
+		edges_weight_load[*ei] = weight2 + 1;
 	}
 }
 

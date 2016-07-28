@@ -27,7 +27,7 @@ Node::~Node()
 }
 
 void Node::__updateIMatrix(Edge t_edge) {
-	int ch = edges_weight[t_edge];
+	int ch = edges_weight_channel[t_edge];
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		float t_dist = this->getDistance(**i);
@@ -60,7 +60,7 @@ void Node::__init() {
 }
 
 void Node::__updateIMatrixNormal(Edge t_edge) {
-	int ch = edges_weight[t_edge];
+	int ch = edges_weight_channel[t_edge];
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		int test1 = (*i)->getId();
@@ -207,12 +207,12 @@ void Node::channelAssignment() {
 		int s = source(*i, *m_conGraph);
 		int targetNode = target(*i, *m_conGraph);
 		int p_id = m_id;
-		if (edges_weight[*i] < 0) {
+		if (edges_weight_channel[*i] < 0) {
 			int ch = __chooseRadio(*m_nodes.at(targetNode));
 			if (ch == -1) {
 				continue;
 			}
-			edges_weight[*i] = ch;
+			edges_weight_channel[*i] = ch;
 			__updateIMatrix(*i);
 		}
 	}	
@@ -228,7 +228,7 @@ void Node::channelAssignmentNormal() {
 		int s = source(*i, *m_conGraph);
 		int targetNode = target(*i, *m_conGraph);
 		int p_id = m_id;
-		if (edges_weight[*i] < 0) {
+		if (edges_weight_channel[*i] < 0) {
 			int ch = __chooseRadioNormal(*m_nodes.at(targetNode));
 			if (ch > 2) {
 				cout << "something wrong is happen!" << endl;
@@ -236,7 +236,7 @@ void Node::channelAssignmentNormal() {
 			if (ch == -1) {
 				continue;
 			}
-			edges_weight[*i] = ch;
+			edges_weight_channel[*i] = ch;
 			__updateIMatrixNormal(*i);
 		}
 	}
