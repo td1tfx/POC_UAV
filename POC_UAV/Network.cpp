@@ -302,6 +302,7 @@ bool Network::__getShortestPath(int destId) {
 				vector<int>* path = new vector<int>;
 				int p = (*i)->getId();
 				(*i)->getRoutingMatrix()->getData(destId, p) = 1;
+				(*i)->getGWHop() = distMap.at(p);
 				string linkId = toString(p);
 				string routingId = "";
 				int num = 0;

@@ -41,6 +41,7 @@ private:
 	int m_linkNum;
 	int m_packageCount;
 	int m_GWNum;
+	int m_GWHop;
 	float m_nodeTime;
 	float m_packageRate;
 	float m_x, m_y, m_z;
@@ -98,6 +99,7 @@ public:
 	int& getGWNum() { return m_GWNum; }
 	int& getId() { return m_id; }
 	int& getLinkNum() { return m_linkNum; }
+	int& getGWHop() { return m_GWHop; }
 	int getPackageNum() { return m_qServe.size();}
 	bool& getIsGW() { return m_isGW; }
 	bool& isOuterNode() { return m_isOuterNode; }
@@ -118,10 +120,12 @@ public:
 	}
 
 	float getDistance(Node m);
+	float calculateUtility(int j);
 	void channelAssignment();
 	void channelAssignmentNormal();
 	void generatePackage();
 	void generatePaPerRound();
+
 
 };
 

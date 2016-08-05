@@ -11,6 +11,7 @@ Node::Node()
 	m_linkNum = 0;
 	m_packageCount = 0;
 	m_nodeTime = 0;
+	m_GWHop = 0;
 	int maxRow = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
 	int maxColumn = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
 	m_routingMatrix = new d_matrix(maxRow, maxColumn);
@@ -269,4 +270,54 @@ void Node::generatePackage() {
 	}
 	m_qServe.push(m_package);
 	m_packageCount++;
+}
+
+float Node::calculateUtility(int j) {
+
+	if (m_GWHop <= 0) {
+		return 0;
+	}
+	float rate = Config::getInstance()->getBandwidth() / 1024 * m_edges.size();
+	float interN = 0;
+	for (int i = 1; i < 12; i++) {
+		int p1 = m_IMatrix->getData(j, i);
+		interN = interN + p1;
+	}
+
+
+// 
+// 
+// 	Float[] miMetric = new Float[playerVertices.size()];
+// 	for (int i : playerVertices.keySet()) {
+// 		if (playerVertices.get(i).isGw()) {
+// 			miMetric[i] = 0f;
+// 		}
+// 		else {
+// 			if (distMap.get(i) == null) {
+// 				miMetric[i] = 0f;
+// 			}
+// 			else {
+// 				spLink = linkEdges.get(dsp.getPath(i, gwId).get(0));
+// 				miMetric[i] = (6f / (float)spLink.getNumOfIntLinks()) / distMap.get(i).floatValue();
+// 				System.out.println("Player=" + i + " MCS=6" + " IntLink=" + spLink.getNumOfIntLinks() + " dist=" + distMap.get(i));
+// 			}
+// 		}
+// 	}
+// 	for (int i = 0; i < miMetric.length; i++) {
+// 		sum += miMetric[i];
+// 	}
+// 
+// 	if (sum == maxUF) {
+// 		maxUFGraphs.add(chGraph.toString());
+// 		//			logger.debug("New maxUF Topology size=" + maxUFGraphs.size() + " maxUF= " + maxUF);
+// 	}
+// 
+// 	if (sum > maxUF) {
+// 		logger.debug("New maxUF uf=" + sum);
+// 		maxUF = sum;
+// 		maxUFGraphs.clear();
+// 		maxUFGraphs.add(chGraph.toString());
+// 		logger.debug(chGraph.toString());
+// 	}
+// 	return sum;
 }
