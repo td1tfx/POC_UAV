@@ -46,6 +46,7 @@ private:
 	float m_packageRate;
 	float m_x, m_y, m_z;
 	d_matrix* m_IMatrix;
+	d_matrix* m_IMatrix_copy;
 	d_matrix* m_OCMatrix;
 	d_matrix* m_routingMatrix;	//routing Matrix with binary
 	d_matrix* m_shortRouting;   //routing Matrix with decimal
@@ -76,6 +77,7 @@ private:
 	void __updateIF();
 	bool __isCAValid(int ch);
 	float __getIF(float dist, int ch1, int ch2);
+	float __calculateUtility();
 	int __chooseRadio(Node n);
 	int __chooseRadioNormal(Node n);
 
@@ -120,11 +122,11 @@ public:
 	}
 
 	float getDistance(Node m);
-	float calculateUtility(int j);
 	void channelAssignment();
 	void channelAssignmentNormal();
 	void generatePackage();
 	void generatePaPerRound();
+	int bestResponse();
 
 
 };

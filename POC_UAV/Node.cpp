@@ -5,6 +5,7 @@
 Node::Node()
 {
 	m_IMatrix = new d_matrix(11, 12, -2);
+	m_IMatrix_copy = new d_matrix(11, 12, -2);
 	__initIMatrix();
 	m_OCMatrix = new d_matrix(3, 2, -2);
 	__initOCMatrix();
@@ -25,6 +26,11 @@ Node::Node()
 
 Node::~Node()
 {
+	delete m_IMatrix;
+	delete m_IMatrix_copy;
+	delete m_OCMatrix;
+	delete m_routingMatrix;
+	delete m_shortRouting;
 }
 
 void Node::__updateIMatrix(Edge t_edge) {
@@ -272,52 +278,40 @@ void Node::generatePackage() {
 	m_packageCount++;
 }
 
-float Node::calculateUtility(int j) {
+int Node::bestResponse() {
+	
+	d_matrix::cpyData(m_IMatrix_copy, m_IMatrix);
+	for (int i = 0; i < 11; i++) {
+		
+	}
+}
+
+float Node::__calculateUtility() {
 
 	if (m_GWHop <= 0) {
 		return 0;
 	}
+	int min = INFINITY;
 	float rate = Config::getInstance()->getBandwidth() / 1024 * m_edges.size();
 	float interN = 0;
-	for (int i = 1; i < 12; i++) {
-		int p1 = m_IMatrix->getData(j, i);
-		interN = interN + p1;
+	int j = 0;
+	vector<Edge>::iterator ei;
+	float up = 0;
+	for (ei = m_edges.begin(); ei != m_edges.end(); ei++) {
+		float up_t = 0;
+		if (edges_weight_channel[*ei] >= 0) {
+			int targetNode = target(*ei, *m_conGraph);
+			j = edges_weight_channel[*ei];
+			for (int i = 1; i < 12; i++) {
+				int p1 = m_IMatrix->getData(j, i);
+				int p2 = m_nodes.at(targetNode)->getIMatrix()->getData(j, i);
+				interN = interN + p1 + p2;
+			}
+			up_t = rate / interN;
+			up = up + up_t;
+		}
 	}
-
-
-// 
-// 
-// 	Float[] miMetric = new Float[playerVertices.size()];
-// 	for (int i : playerVertices.keySet()) {
-// 		if (playerVertices.get(i).isGw()) {
-// 			miMetric[i] = 0f;
-// 		}
-// 		else {
-// 			if (distMap.get(i) == null) {
-// 				miMetric[i] = 0f;
-// 			}
-// 			else {
-// 				spLink = linkEdges.get(dsp.getPath(i, gwId).get(0));
-// 				miMetric[i] = (6f / (float)spLink.getNumOfIntLinks()) / distMap.get(i).floatValue();
-// 				System.out.println("Player=" + i + " MCS=6" + " IntLink=" + spLink.getNumOfIntLinks() + " dist=" + distMap.get(i));
-// 			}
-// 		}
-// 	}
-// 	for (int i = 0; i < miMetric.length; i++) {
-// 		sum += miMetric[i];
-// 	}
-// 
-// 	if (sum == maxUF) {
-// 		maxUFGraphs.add(chGraph.toString());
-// 		//			logger.debug("New maxUF Topology size=" + maxUFGraphs.size() + " maxUF= " + maxUF);
-// 	}
-// 
-// 	if (sum > maxUF) {
-// 		logger.debug("New maxUF uf=" + sum);
-// 		maxUF = sum;
-// 		maxUFGraphs.clear();
-// 		maxUFGraphs.add(chGraph.toString());
-// 		logger.debug(chGraph.toString());
-// 	}
-// 	return sum;
+	float utility = up / m_GWHop;
+	return utility;
 }
+
