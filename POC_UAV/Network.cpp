@@ -183,6 +183,23 @@ void Network::runNormal()
 	system("pause");
 }
 
+void Network::runPOCGame()
+{
+	while (!m_priNodes.empty()) {
+		//(*i)->printIMatrix();
+		vector<Node*>::iterator i;
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {		
+		//std::cout << "node:" << (*i)->getId() << "->edges:" << (*i)->getNeigherNodes().size() << endl;
+		(*i)->bestResponse();
+		//t_node->printIMatrix();
+		//m_priNodes.pop();
+		}
+	}
+	printCH();
+	printPath();
+	system("pause");
+}
+
 void Network::__createNeighborGraph() {
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {

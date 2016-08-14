@@ -26,11 +26,27 @@ Node::Node()
 
 Node::~Node()
 {
-	delete m_IMatrix;
-	delete m_IMatrix_copy;
-	delete m_OCMatrix;
-	delete m_routingMatrix;
-	delete m_shortRouting;
+// 	delete m_IMatrix;
+// 	delete m_IMatrix_copy;
+// 	delete m_OCMatrix;
+// 	delete m_routingMatrix;
+// 	delete m_shortRouting;
+}
+
+void Node::__init() {
+	if (m_id / Config::getInstance()->getMaxRow() == 0 || m_id / Config::getInstance()->getMaxRow() == Config::getInstance()->getMaxRow() - 1
+		|| m_id % Config::getInstance()->getMaxRow() == 0 || m_id % Config::getInstance()->getMaxRow() == Config::getInstance()->getMaxColumn() - 1) {
+		m_isOuterNode = true;
+		//paGenerateRate = rand() % (int)Config::getInstance()->getMaxGenerateRate() + 1;
+	}
+	else {
+		m_isOuterNode = false;
+		//paGenerateRate = 0;
+	}
+	for (int i = 0; i < Config::getInstance()->getMaxGenerateRate(); i++) {
+		//generatePackage();
+	}
+
 }
 
 void Node::__updateIMatrix(Edge t_edge) {
@@ -50,20 +66,21 @@ void Node::__updateIMatrix(Edge t_edge) {
 	}
 }
 
-void Node::__init() {
-	if (m_id/Config::getInstance()->getMaxRow() == 0 || m_id / Config::getInstance()->getMaxRow() == Config::getInstance()->getMaxRow() - 1
-		|| m_id % Config::getInstance()->getMaxRow() == 0 || m_id % Config::getInstance()->getMaxRow() == Config::getInstance()->getMaxColumn() - 1) {
-		m_isOuterNode = true;
-		//paGenerateRate = rand() % (int)Config::getInstance()->getMaxGenerateRate() + 1;
+void Node::__updateIMatrixCopy(Edge t_edge) {
+	int ch = edges_weight_channel[t_edge];
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		float t_dist = this->getDistance(**i);
+		if (t_dist < (*i)->getIMatrixCopy()->getData(ch, 0)) {
+			(*i)->getIMatrixCopy()->getData(ch, 0) = t_dist;
+			(*i)->__updateIFCopy();
+		}
+		t_dist = m_nodes.at(target(t_edge, *m_conGraph))->getDistance(**i);
+		if (t_dist < (*i)->getIMatrixCopy()->getData(ch, 0)) {
+			(*i)->getIMatrixCopy()->getData(ch, 0) = t_dist;
+			(*i)->__updateIFCopy();
+		}
 	}
-	else {
-		m_isOuterNode = false;
-		//paGenerateRate = 0;
-	}
-	for (int i = 0; i < Config::getInstance()->getMaxGenerateRate(); i++) {
-		//generatePackage();
-	}
-
 }
 
 void Node::__updateIMatrixNormal(Edge t_edge) {
@@ -145,6 +162,14 @@ void Node::__updateIF() {
 	for (int ch = 0; ch < 11; ch++) {
 		for (int i = 1; i < 12; i++) {
 			m_IMatrix->getData(ch, i) += __getIF(m_IMatrix->getData(i - 1, 0), ch, i - 1);
+		}
+	}
+}
+
+void Node::__updateIFCopy() {
+	for (int ch = 0; ch < 11; ch++) {
+		for (int i = 1; i < 12; i++) {
+			m_IMatrix_copy->getData(ch, i) += __getIF(m_IMatrix_copy->getData(i - 1, 0), ch, i - 1);
 		}
 	}
 }
@@ -249,6 +274,28 @@ void Node::channelAssignmentNormal() {
 	}
 }
 
+vector<Edge>::iterator Node::channelAssignmentCopy(int ch) {
+	vector<Edge>::iterator i;
+	if (m_edges.empty()) {
+		std::cout << "wrong!!!m_edges is empty!" << endl;
+		return m_edges.end();
+	}
+	for (i = m_edges.begin(); i != m_edges.end(); i++) {
+		int s = source(*i, *m_conGraph);
+		int targetNode = target(*i, *m_conGraph);
+		int p_id = m_id;
+		if (edges_weight_channel[*i] < 0) {
+			if (ch == -1) {
+				continue;
+			}
+			edges_weight_channel[*i] = ch;
+			__updateIMatrixCopy(*i);
+			return i;
+		}
+	}
+	//return NULL;
+}
+
 void Node::generatePaPerRound() {
 	double pNumPer = (double)(Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
 	double gRatePerRound = Config::getInstance()->getMaxGenerateRate() / pNumPer;
@@ -279,14 +326,32 @@ void Node::generatePackage() {
 }
 
 int Node::bestResponse() {
-	
-	d_matrix::cpyData(m_IMatrix_copy, m_IMatrix);
-	for (int i = 0; i < 11; i++) {
-		
+	copyIMatrix();
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		(*i)->copyIMatrix();
 	}
+	float maxUtility = 0;
+	int ch = -1;
+	vector<Edge>::iterator ed_t;
+	for (int i = 0; i < 11; i++) {
+		float oneUtility = 0;
+		ed_t = channelAssignmentCopy(i);
+		vector<Node*>::iterator j;
+		for (j = m_nodes.begin(); j != m_nodes.end(); j++) {
+			oneUtility += (*j)->calculateUtility();
+		}
+		if (oneUtility > maxUtility) {
+			maxUtility = oneUtility;
+			ch = i;
+		}
+	}
+	edges_weight_channel[*ed_t] = ch;
+	__updateIMatrix(*ed_t);
+	return ch;
 }
 
-float Node::__calculateUtility() {
+float Node::calculateUtility() {
 
 	if (m_GWHop <= 0) {
 		return 0;
@@ -303,8 +368,8 @@ float Node::__calculateUtility() {
 			int targetNode = target(*ei, *m_conGraph);
 			j = edges_weight_channel[*ei];
 			for (int i = 1; i < 12; i++) {
-				int p1 = m_IMatrix->getData(j, i);
-				int p2 = m_nodes.at(targetNode)->getIMatrix()->getData(j, i);
+				int p1 = m_IMatrix_copy->getData(j, i);
+				int p2 = m_nodes.at(targetNode)->getIMatrixCopy()->getData(j, i);
 				interN = interN + p1 + p2;
 			}
 			up_t = rate / interN;

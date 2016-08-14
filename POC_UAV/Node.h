@@ -71,13 +71,14 @@ private:
 
 	void __init();
 	void __updateIMatrix(Edge t_edge);
+	void __updateIMatrixCopy(Edge t_edge);
 	void __updateIMatrixNormal(Edge t_edge);
 	void __initIMatrix();
 	void __initOCMatrix();
 	void __updateIF();
+	void __updateIFCopy();
 	bool __isCAValid(int ch);
 	float __getIF(float dist, int ch1, int ch2);
-	float __calculateUtility();
 	int __chooseRadio(Node n);
 	int __chooseRadioNormal(Node n);
 
@@ -111,23 +112,26 @@ public:
 	float& getPackageRate() { return m_packageRate; }
 	double*& getInData() { return m_inData; }
 	d_matrix* getIMatrix() { return m_IMatrix; }
+	d_matrix* getIMatrixCopy() { return m_IMatrix_copy; }
 	d_matrix* getOCMatrix() { return m_OCMatrix; }
 	d_matrix*& getRoutingMatrix() { return m_routingMatrix; }
 	d_matrix*& getShortPath() {	return m_shortRouting;	}
 	vector<Node*>& getNeigherNodes() { return m_neigherNodes; }
 	vector<Edge>& getEdges() { return m_edges; }
+	void copyIMatrix() {d_matrix::cpyData(m_IMatrix_copy, m_IMatrix);}
 	bool lessthan(const Node* node) const
 	{
 		return m_neigherNodes.size() < ((Node*)node)->getNeigherNodes().size();
 	}
 
 	float getDistance(Node m);
+	float calculateUtility();
 	void channelAssignment();
 	void channelAssignmentNormal();
 	void generatePackage();
 	void generatePaPerRound();
 	int bestResponse();
-
+	vector<Edge>::iterator channelAssignmentCopy(int ch);
 
 };
 

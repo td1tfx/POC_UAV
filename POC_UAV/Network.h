@@ -38,6 +38,7 @@ public:
 	~Network();
 	void runPOC();
 	void runNormal();
+	void runPOCGame();
 
 	void initGraph();
 	void initGraphByFile();
