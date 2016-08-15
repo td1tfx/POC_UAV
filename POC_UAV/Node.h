@@ -55,6 +55,7 @@ private:
 	vector<Node*> m_nodes;
 	vector<Node*> m_outerNodes;
 	vector<Edge> m_edges;
+	vector<float> m_utility;
 	std::queue<Package*> m_qServe;
 	std::queue<Package*> m_qFinished;
 	bool m_isGW;
@@ -71,7 +72,7 @@ private:
 
 	void __init();
 	void __updateIMatrix(Edge t_edge);
-	void __updateIMatrixCopy(Edge t_edge);
+	void __updateIMatrixCopy(Edge t_edge, int ch);
 	void __updateIMatrixNormal(Edge t_edge);
 	void __initIMatrix();
 	void __initOCMatrix();
@@ -126,12 +127,12 @@ public:
 
 	float getDistance(Node m);
 	float calculateUtility();
+	float bestResponse();
 	void channelAssignment();
 	void channelAssignmentNormal();
 	void generatePackage();
 	void generatePaPerRound();
-	int bestResponse();
-	vector<Edge>::iterator channelAssignmentCopy(int ch);
+	void channelAssignmentCopy(int ch);
 
 };
 

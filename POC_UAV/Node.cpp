@@ -66,8 +66,7 @@ void Node::__updateIMatrix(Edge t_edge) {
 	}
 }
 
-void Node::__updateIMatrixCopy(Edge t_edge) {
-	int ch = edges_weight_channel[t_edge];
+void Node::__updateIMatrixCopy(Edge t_edge, int ch) {
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		float t_dist = this->getDistance(**i);
@@ -274,25 +273,8 @@ void Node::channelAssignmentNormal() {
 	}
 }
 
-vector<Edge>::iterator Node::channelAssignmentCopy(int ch) {
-	vector<Edge>::iterator i;
-	if (m_edges.empty()) {
-		std::cout << "wrong!!!m_edges is empty!" << endl;
-		return m_edges.end();
-	}
-	for (i = m_edges.begin(); i != m_edges.end(); i++) {
-		int s = source(*i, *m_conGraph);
-		int targetNode = target(*i, *m_conGraph);
-		int p_id = m_id;
-		if (edges_weight_channel[*i] < 0) {
-			if (ch == -1) {
-				continue;
-			}
-			edges_weight_channel[*i] = ch;
-			__updateIMatrixCopy(*i);
-			return i;
-		}
-	}
+void Node::channelAssignmentCopy(int ch) {
+
 	//return NULL;
 }
 
@@ -325,30 +307,49 @@ void Node::generatePackage() {
 	m_packageCount++;
 }
 
-int Node::bestResponse() {
-	copyIMatrix();
-	vector<Node*>::iterator i;
-	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-		(*i)->copyIMatrix();
-	}
+ float Node::bestResponse() {
+	m_utility.clear();
 	float maxUtility = 0;
 	int ch = -1;
-	vector<Edge>::iterator ed_t;
-	for (int i = 0; i < 11; i++) {
-		float oneUtility = 0;
-		ed_t = channelAssignmentCopy(i);
-		vector<Node*>::iterator j;
-		for (j = m_nodes.begin(); j != m_nodes.end(); j++) {
-			oneUtility += (*j)->calculateUtility();
+	vector<Edge>::iterator eii;
+	if (m_edges.empty()) {
+		std::cout << "wrong!!!m_edges is empty!" << endl;
+		return -1;
+	}
+	for (eii = m_edges.begin(); eii != m_edges.end(); eii++) {
+		int s = source(*eii, *m_conGraph);
+		//int targetNode = target(*eii, *m_conGraph);
+		//int p_id = m_id;
+		float maxUtility_edge = 0;
+		for (int i = 0; i < 11; i++) {
+			float oneUtility = 0;
+			vector<Node*>::iterator nodei;
+			for (nodei = m_nodes.begin(); nodei != m_nodes.end(); nodei++) {
+				(*nodei)->copyIMatrix();
+			}
+			int t_ch = edges_weight_channel[*eii];
+			edges_weight_channel[*eii] = i;
+			//__updateIMatrixCopy(*eii, i);
+			vector<Node*>::iterator j;
+			for (j = m_nodes.begin(); j != m_nodes.end(); j++) {
+				oneUtility += (*j)->calculateUtility();
+			}
+			edges_weight_channel[*eii] = t_ch;
+			if (oneUtility > maxUtility_edge) {
+				maxUtility_edge = oneUtility;
+				ch = i;
+			}
 		}
-		if (oneUtility > maxUtility) {
-			maxUtility = oneUtility;
-			ch = i;
+		edges_weight_channel[*eii] = ch;
+		__updateIMatrix(*eii);
+		m_utility.push_back(maxUtility_edge);
+	}
+	for (int i = 0; i < m_edges.size(); i++) {
+		if (m_utility.at(i) > maxUtility) {
+			maxUtility = m_utility.at(i);
 		}
 	}
-	edges_weight_channel[*ed_t] = ch;
-	__updateIMatrix(*ed_t);
-	return ch;
+	return maxUtility;
 }
 
 float Node::calculateUtility() {
@@ -359,6 +360,7 @@ float Node::calculateUtility() {
 	int min = INFINITY;
 	float rate = Config::getInstance()->getBandwidth() / 1024 * m_edges.size();
 	float interN = 0;
+	int interNum = 0;
 	int j = 0;
 	vector<Edge>::iterator ei;
 	float up = 0;
@@ -371,12 +373,15 @@ float Node::calculateUtility() {
 				int p1 = m_IMatrix_copy->getData(j, i);
 				int p2 = m_nodes.at(targetNode)->getIMatrixCopy()->getData(j, i);
 				interN = interN + p1 + p2;
+				if (p1 > 0 || p2 > 0) {
+					interNum++;
+				}
 			}
-			up_t = rate / interN;
+			up_t = rate / (interN + 1);
 			up = up + up_t;
 		}
 	}
-	float utility = up / m_GWHop;
+	float utility = up / (m_GWHop + 1);
 	return utility;
 }
 

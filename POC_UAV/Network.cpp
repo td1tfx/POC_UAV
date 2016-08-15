@@ -155,6 +155,7 @@ void Network::__updatePribyLoad() {
 
 void Network::runPOC()
 {
+	//getAllShortestPath();
 	while (!m_priNodes.empty()) {
 		//(*i)->printIMatrix();
 		auto t_node = (Node*)m_priNodes.top();		
@@ -170,6 +171,7 @@ void Network::runPOC()
 
 void Network::runNormal()
 {
+	//getAllShortestPath();
 	while (!m_priNodes.empty()) {
 		//(*i)->printIMatrix();
 		auto t_node = (Node*)m_priNodes.top();
@@ -185,12 +187,20 @@ void Network::runNormal()
 
 void Network::runPOCGame()
 {
-	while (!m_priNodes.empty()) {
+	getAllShortestPath();
+	int max = 0;
+	int isbest = 1;
+	while (isbest == 1) {
+		isbest = 0;
 		//(*i)->printIMatrix();
 		vector<Node*>::iterator i;
 		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {		
 		//std::cout << "node:" << (*i)->getId() << "->edges:" << (*i)->getNeigherNodes().size() << endl;
-		(*i)->bestResponse();
+		int utility = (*i)->bestResponse();
+		if (utility > max) {
+			max = utility;
+			isbest = 1;
+		}
 		//t_node->printIMatrix();
 		//m_priNodes.pop();
 		}
@@ -291,8 +301,8 @@ void Network::printPath() {
 		edge_num++;
 	}
 	std::cout << endl;
-	std::cout << "edge_num =" << edge_num << endl;
-	std::cout << "connecty_num =" << connecty_num << endl;
+	//std::cout << "edge_num =" << edge_num << endl;
+	//std::cout << "connecty_num =" << connecty_num << endl;
 }
 
 
@@ -311,6 +321,7 @@ bool Network::__getShortestPath(int destId) {
 		if ((*i)->getId() == destId) {
 		}
 		else {
+			int test1 = (*i)->getId();
 			if (distMap.at((*i)->getId()) == NULL) {
 				cout << "error!! Node=" << (*i)->getId() << "distMap = NULL, packageNum =" << (*i)->getPackageNum() << endl;
 				return false;
@@ -319,7 +330,7 @@ bool Network::__getShortestPath(int destId) {
 				vector<int>* path = new vector<int>;
 				int p = (*i)->getId();
 				(*i)->getRoutingMatrix()->getData(destId, p) = 1;
-				(*i)->getGWHop() = distMap.at(p);
+				int mmm = (*i)->getGWHop() = distMap.at(p);
 				string linkId = toString(p);
 				string routingId = "";
 				int num = 0;
