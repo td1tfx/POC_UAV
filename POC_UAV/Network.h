@@ -12,6 +12,7 @@ private:
 	vector<Node*> m_nodes;
 	vector<Node*> m_outerNodes;
 	priority_queue<Node*, vector<Node*>, Compare> m_priNodes;
+	priority_queue<Node*, vector<Node*>, CompareRandom> m_priNodesRandom;
 	Graph *m_conGraph;		//graph of channel assignment
 	DGraph *m_dGraph;		//graph of routing
 	property_map<Graph, vertex_index_t>::type node_index = get(vertex_index, *m_conGraph);
@@ -29,6 +30,7 @@ private:
 	void __updateNeighborGraph();
 	void __updatePribyLinkNum();
 	void __updatePribyLoad();
+	void __updatePribyRandom();
 	void __getNodesLoad();
 	bool __getShortestPath(int destId);
 

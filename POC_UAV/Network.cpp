@@ -153,6 +153,17 @@ void Network::__updatePribyLoad() {
 	}
 }
 
+void Network::__updatePribyRandom() {
+	while(!m_priNodesRandom.empty()) {
+		m_priNodesRandom.pop();
+	}
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		(*i)->setRandom(rand());
+		m_priNodesRandom.push(*i);
+	}
+}
+
 void Network::runPOC()
 {
 	//getAllShortestPath();
@@ -188,25 +199,29 @@ void Network::runNormal()
 void Network::runPOCGame()
 {
 	getAllShortestPath();
-	int max = 0;
+	float max = 0;
 	int isbest = 1;
+	int time = 0;
 	while (isbest == 1) {
+		__updatePribyRandom();
 		isbest = 0;
-		//(*i)->printIMatrix();
-		vector<Node*>::iterator i;
-		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {		
+		//vector<Node*>::iterator i;
+		while (!m_priNodesRandom.empty()) {
+		auto t_node = (Node*)m_priNodesRandom.top();
 		//std::cout << "node:" << (*i)->getId() << "->edges:" << (*i)->getNeigherNodes().size() << endl;
-		int utility = (*i)->bestResponse();
+		float utility = t_node->bestResponse();
 		if (utility > max) {
 			max = utility;
 			isbest = 1;
 		}
 		//t_node->printIMatrix();
-		//m_priNodes.pop();
+		m_priNodesRandom.pop();
 		}
+		time++;
 	}
+	std::cout << "MaxUtility:" << max << " times:" << time << endl;
 	printCH();
-	printPath();
+	//printPath();
 	system("pause");
 }
 

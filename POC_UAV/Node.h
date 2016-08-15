@@ -42,6 +42,7 @@ private:
 	int m_packageCount;
 	int m_GWNum;
 	int m_GWHop;
+	int m_random;
 	float m_nodeTime;
 	float m_packageRate;
 	float m_x, m_y, m_z;
@@ -93,6 +94,7 @@ public:
 
 	void setId(int id) { m_id = id; }
 	void setPos(int x, int y, int z) { m_x = x; m_y = y; m_z = z; }
+	void setRandom(int random) { m_random = random; }
 	void setMNodes(vector<Node*> t) { m_nodes = t; }
 	void setOuterNodes(vector<Node*> t) { m_outerNodes = t; }
 	void setMcongraph(Graph* t) {
@@ -124,6 +126,10 @@ public:
 	{
 		return m_neigherNodes.size() < ((Node*)node)->getNeigherNodes().size();
 	}
+	bool lessthanRandom(const Node* node) const
+	{
+		return m_random < ((Node*)node)->m_random;
+	}
 
 	float getDistance(Node m);
 	float calculateUtility();
@@ -142,5 +148,14 @@ public:
 	bool operator () (Node* t1, Node* t2)
 	{
 		return t1->lessthan(t2);
+	}
+};
+
+class CompareRandom
+{
+public:
+	bool operator () (Node* t1, Node* t2)
+	{
+		return t1->lessthanRandom(t2);
 	}
 };

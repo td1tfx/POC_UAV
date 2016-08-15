@@ -307,7 +307,7 @@ void Node::generatePackage() {
 	m_packageCount++;
 }
 
- float Node::bestResponse() {
+float Node::bestResponse() {
 	m_utility.clear();
 	float maxUtility = 0;
 	int ch = -1;
