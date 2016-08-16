@@ -200,25 +200,18 @@ void Network::runPOCGame()
 {
 	getAllShortestPath();
 	float max = 0;
-	int isbest = 1;
 	int time = 0;
-	while (isbest == 1) {
-		__updatePribyRandom();
-		isbest = 0;
-		//vector<Node*>::iterator i;
-		while (!m_priNodesRandom.empty()) {
+	__updatePribyRandom();
+	//vector<Node*>::iterator i;
+	while (!m_priNodesRandom.empty()) {
 		auto t_node = (Node*)m_priNodesRandom.top();
 		//std::cout << "node:" << (*i)->getId() << "->edges:" << (*i)->getNeigherNodes().size() << endl;
-		float utility = t_node->bestResponse();
-		if (utility > max) {
-			max = utility;
-			isbest = 1;
-		}
+		float utility = t_node->bestResponseInAoCAG();
+		max += utility;
 		//t_node->printIMatrix();
 		m_priNodesRandom.pop();
-		}
-		time++;
 	}
+	time++;
 	std::cout << "MaxUtility:" << max << " times:" << time << endl;
 	printCH();
 	//printPath();

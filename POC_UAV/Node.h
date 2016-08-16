@@ -132,8 +132,10 @@ public:
 	}
 
 	float getDistance(Node m);
-	float calculateUtility();
-	float bestResponse();
+	float calculateUtilityInCoCAG();
+	float calculateUtilityInAoCAG();
+	float bestResponseInCoCAG();
+	float bestResponseInAoCAG();
 	void channelAssignment();
 	void channelAssignmentNormal();
 	void generatePackage();
