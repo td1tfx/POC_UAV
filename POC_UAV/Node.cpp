@@ -451,7 +451,7 @@ float Node::calculateUtilityInAoCAG() {
 			up = up + up_t;
 		}
 	}
-	float utility = up / (m_GWHop + 1);
+	float utility = up / (1);
 	return utility;
 }
 
