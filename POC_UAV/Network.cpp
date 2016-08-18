@@ -108,7 +108,7 @@ int Network::__initRandomFromFile() {
 
 
 void Network::initGraph() {
-	if (__initGrid()) {
+	if (int text = __initGrid()) {
 		//cuTime = 0;
 		m_conGraph = new Graph;
 		m_dGraph = new DGraph;
@@ -196,11 +196,12 @@ void Network::runNormal()
 	system("pause");
 }
 
-void Network::runPOCGame()
+float Network::runPOCGame()
 {
 	getAllShortestPath();
 	float max = 0;
 	int time = 0;
+	iterTimes = 0;
 	__updatePribyRandom();
 	//vector<Node*>::iterator i;
 	while (!m_priNodesRandom.empty()) {
@@ -210,12 +211,14 @@ void Network::runPOCGame()
 		max += utility;
 		//t_node->printIMatrix();
 		m_priNodesRandom.pop();
+		iterTimes++;
 	}
 	time++;
-	std::cout << "MaxUtility:" << max << " times:" << time << endl;
-	printCH();
+	std::cout << "NetUtility:" << max << " times:" << time << endl;
+	//printCH();
 	//printPath();
-	system("pause");
+	//system("pause");
+	return max;
 }
 
 void Network::__createNeighborGraph() {

@@ -36,11 +36,12 @@ private:
 
 public:
 
+	int iterTimes;
 	Network();
 	~Network();
 	void runPOC();
 	void runNormal();
-	void runPOCGame();
+	float runPOCGame();
 
 	void initGraph();
 	void initGraphByFile();
