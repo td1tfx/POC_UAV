@@ -20,8 +20,11 @@ int main(int argc, char *argv[]) {
 	cout << "aveUtility = " << aveUtility << endl;
 	cout << "maxUtility = " << maxUtility << endl;
 // 	auto net1 = new Network;
-// 	net1->initGraphByFile();
+// 	net1->initGraph();
 // 	net1->runNormal();
-	system("pause");
+// 	auto net2 = new Network;
+// 	net2->initGraph();
+// 	net2->runPOC();
+// 	system("pause");
 	return argc;
 }
