@@ -43,6 +43,7 @@ private:
 	int m_GWNum;
 	int m_GWHop;
 	int m_random;
+	int m_sigCount;
 	float m_nodeTime;
 	float m_packageRate;
 	float m_x, m_y, m_z;

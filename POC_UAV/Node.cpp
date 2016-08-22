@@ -53,6 +53,7 @@ void Node::__updateIMatrix(Edge t_edge) {
 	int ch = edges_weight_channel[t_edge];
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		m_sigCount++;
 		float t_dist = this->getDistance(**i);
 		if (t_dist < (*i)->getIMatrix()->getData(ch, 0)) {
 			(*i)->getIMatrix()->getData(ch, 0) = t_dist;
