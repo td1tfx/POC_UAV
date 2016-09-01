@@ -158,13 +158,23 @@ void Network::__updatePribyRandom() {
 		m_priNodesRandom.pop();
 	}
 	vector<Node*>::iterator i;
+	float maxLoad = 0;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		(*i)->setRandom(rand());
 		m_priNodesRandom.push(*i);
+		if (maxLoad < (*i)->getRandom()) {
+			maxLoad = (*i)->getRandom();
+		}
+	}
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		m_inData[(*i)->getId()] = (*i)->getRandom() / maxLoad;
+	}
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		(*i)->getInData() = m_inData;
 	}
 }
 
-void Network::runPOC()
+void Network::runPOC(int num)
 {
 	//getAllShortestPath();
 	while (!m_priNodes.empty()) {
@@ -173,6 +183,12 @@ void Network::runPOC()
 		std::cout << "node:" << t_node->getId() << "->edges:" << t_node->getNeigherNodes().size() << endl;
 		t_node->channelAssignment();
 		t_node->printIMatrix();
+		if (num == 0) {
+			t_node->saveNodeData(m_inDataSize, 1);
+		}
+		else {
+			t_node->saveNodeData(m_inDataSize, 0);
+		}
 		m_priNodes.pop();		
 	}
 	printCH();
@@ -196,7 +212,7 @@ void Network::runNormal()
 	system("pause");
 }
 
-float Network::runPOCGame()
+float Network::runPOCGame(int num)
 {
 	getAllShortestPath();
 	float max = 0;
@@ -211,6 +227,12 @@ float Network::runPOCGame()
 		max += utility;
 		//t_node->printIMatrix();
 		m_priNodesRandom.pop();
+		if (num == 0) {
+			t_node->saveNodeData(m_inDataSize, 1);
+		}
+		else {
+			t_node->saveNodeData(m_inDataSize, 0);
+		}
 		iterTimes++;
 	}
 	time++;
@@ -414,7 +436,7 @@ void Network::__getNodesLoad() {
 			m_inData[i] = a;
 		}
 		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-			(*i)->getInData() == m_inData;
+			(*i)->getInData() = m_inData;
 		}
 	}
 	else {
@@ -429,9 +451,63 @@ void Network::__getNodesLoad() {
 			m_inData[i] = a;
 		}
 		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-			(*i)->getInData() == m_inData;
+			(*i)->getInData() = m_inData;
 		}
 	}
+}
+
+void Network::initTrainNet() {
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		for (int j = 0; j < m_nodes.size(); j++) {
+			(*i)->getNet(j).loadOptoin("learnConfig.ini");
+			(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
+			(*i)->getNet(j).init();
+			cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
+		}
+	}
+}
+
+
+int Network::trainNet() {
+	vector<Node*>::iterator i;
+	if (Config::getInstance()->isSingleOutputMod()) {
+		for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
+			Timer t;
+			t.start();
+			if (Config::getInstance()->isSingleDestMod()) {
+				for (int j = 0; j < 1; j++) {
+					(*i)->getNet(j).run();
+				}
+			}
+			else {
+				(*i)->getNet().run();
+			}
+			t.stop();
+			fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
+		}
+	}
+	else {
+		for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+			Timer t;
+			t.start();
+			if (Config::getInstance()->isSingleDestMod()) {
+				for (int j = 0; j < m_nodes->size(); j++) {
+					(*i)->getNet(j).run();
+				}
+			}
+			else {
+				(*i)->getNet().run();
+			}
+			t.stop();
+			fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
+		}
+	}
+
+#ifdef _WIN32
+	getchar();
+#endif
+	return 0;
 }
 
 string Network::toString(int a)
@@ -441,3 +517,4 @@ string Network::toString(int a)
 	string jFirst = jF;
 	return jFirst;
 }
+

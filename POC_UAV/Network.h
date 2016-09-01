@@ -39,16 +39,17 @@ public:
 	int iterTimes;
 	Network();
 	~Network();
-	void runPOC();
+	void runPOC(int num);
 	void runNormal();
-	float runPOCGame();
+	float runPOCGame(int num);
 
 	void initGraph();
 	void initGraphByFile();
 	void printCH();
 	void printPath();
 	void getAllShortestPath();
-
+	void initTrainNet();
+	int trainNet();
 
 
 	string toString(int a);

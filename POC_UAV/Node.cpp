@@ -2,6 +2,7 @@
 
 
 
+
 Node::Node()
 {
 	m_IMatrix = new d_matrix(11, 12, -2);
@@ -456,4 +457,77 @@ float Node::calculateUtilityInAoCAG() {
 	return utility;
 }
 
+void Node::__CHMatrixTransfer() {
 
+	vector<Edge>::iterator ei;
+	int numE = 0;
+	int test1 = m_edges.size();
+	for (ei = m_edges.begin(); ei != m_edges.end(); ei++) {
+		int CH = edges_weight_channel[*ei];
+		if (CH >= 0) {
+			int* CHNum = new int[11];
+			for (int i = 0; i < 11; i++) {
+				CHNum[i] = 0;
+			}
+			CHNum[CH] = 1;
+			m_CHMatrix.push_back(CHNum);
+			numE++;
+		}
+	}
+}
+
+
+void Node::saveNodeData(int inDataSize, bool clean)
+{
+	__CHMatrixTransfer();
+	char filename[30];
+	char dir[20];
+	int t_outputCount = 11;
+	int t_inputCount = inDataSize;
+	sprintf(dir, "%s%d", "node" , m_id);
+	if (_access(dir, 0) == -1) {
+		_mkdir(dir);
+	}
+	vector<int*>::iterator CHi;
+	int linknum = 1;
+	for (CHi = m_CHMatrix.begin(); CHi != m_CHMatrix.end(); CHi++) {
+		sprintf(filename, "%s%d%s%d%s", "node", m_id, "/link", linknum, ".txt");
+		FILE *fout = stdout;
+		if (filename) {
+			if (clean) {
+				fout = fopen(filename, "w+t");
+				fprintf(fout, "input:");
+				fprintf(fout, "%d", t_inputCount);
+				fprintf(fout, "\t");
+				fprintf(fout, "output:");
+				fprintf(fout, "%d", t_outputCount);
+				fprintf(fout, "\t");
+				fprintf(fout, "testCount:");
+				fprintf(fout, "%d", 0);
+				fprintf(fout, "---------------------------------------\n");
+			}
+			else {
+				fout = fopen(filename, "a+t");
+			}
+
+			for (int i = 0; i < t_inputCount; i++)
+			{
+				fprintf(fout, "%1.2f", m_inData[i]);
+				fprintf(fout, "\t");
+			}
+			fprintf(fout, "toOut:");
+
+			for (int i = 0; i < t_outputCount; i++)
+			{
+				float outCH = (*CHi)[i];
+				fprintf(fout, "%1.2f", outCH);
+				fprintf(fout, "\t");
+			}
+			fprintf(fout, "\n");
+
+			if (filename)
+				fclose(fout);
+		linknum++;
+		}
+	}
+}

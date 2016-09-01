@@ -2,6 +2,7 @@
 #include "neural/MatrixFunctions.h"
 #include "Config.h"
 #include "Package.h"
+#include <iostream>
 #include <queue>
 #include "neural/lib/libconvert.h"
 #include "boost/graph/adjacency_list.hpp"
@@ -9,6 +10,8 @@
 #include "boost/graph/edge_list.hpp"
 #include "boost/graph/dijkstra_shortest_paths.hpp"
 #include <time.h>
+#include <corecrt_io.h>
+#include <direct.h>
 
 #define INFINITY   9999999;
 using namespace std;
@@ -36,7 +39,10 @@ class Compare;
 class Node
 {
 private:
+
 	friend class compare;
+
+	//int* m_CHNum;
 	int m_id;
 	int m_linkNum;
 	int m_packageCount;
@@ -56,6 +62,7 @@ private:
 	vector<Node*> m_neigherNodes;
 	vector<Node*> m_nodes;
 	vector<Node*> m_outerNodes;
+	vector<int*> m_CHMatrix;
 	vector<Edge> m_edges;
 	vector<float> m_utility;
 	std::queue<Package*> m_qServe;
@@ -80,6 +87,7 @@ private:
 	void __initOCMatrix();
 	void __updateIF();
 	void __updateIFCopy();
+	void __CHMatrixTransfer();
 	bool __isCAValid(int ch);
 	float __getIF(float dist, int ch1, int ch2);
 	int __chooseRadio(Node n);
@@ -107,6 +115,7 @@ public:
 	int& getId() { return m_id; }
 	int& getLinkNum() { return m_linkNum; }
 	int& getGWHop() { return m_GWHop; }
+	int getRandom() { return m_random; }
 	int getPackageNum() { return m_qServe.size();}
 	bool& getIsGW() { return m_isGW; }
 	bool& isOuterNode() { return m_isOuterNode; }
@@ -142,6 +151,7 @@ public:
 	void generatePackage();
 	void generatePaPerRound();
 	void channelAssignmentCopy(int ch);
+	void saveNodeData(int inDataSize, bool clean);
 
 };
 
