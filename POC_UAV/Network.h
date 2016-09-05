@@ -36,6 +36,8 @@ private:
 
 public:
 
+	int totalPCount;
+	int wrongPCount;
 	int iterTimes;
 	Network();
 	~Network();
@@ -49,6 +51,7 @@ public:
 	void printPath();
 	void getAllShortestPath();
 	void initTrainNet();
+	void getAllTrainedPath();
 	int trainNet();
 
 

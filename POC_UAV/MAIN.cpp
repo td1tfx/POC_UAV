@@ -6,21 +6,21 @@ int main(int argc, char *argv[]) {
 	int tolNum = 10000;
 
 //POC game
-	float totalUti = 0;
-	float aveUtility = 0;
-	float maxUtility = 0;
-	for (int i = 0; i < tolNum; i++) {
-		auto net = new Network;
-		net->initGraph();
-		float netUtility = net->runPOCGame(i);
-		totalUti += netUtility;
-		if (netUtility > maxUtility) {
-			maxUtility = netUtility;
-		}
-	}
-	aveUtility = totalUti / tolNum;
-	cout << "aveUtility = " << aveUtility << endl;
-	cout << "maxUtility = " << maxUtility << endl;
+// 	float totalUti = 0;
+// 	float aveUtility = 0;
+// 	float maxUtility = 0;
+// 	for (int i = 0; i < tolNum; i++) {
+// 		auto net = new Network;
+// 		net->initGraph();
+// 		float netUtility = net->runPOCGame(i);
+// 		totalUti += netUtility;
+// 		if (netUtility > maxUtility) {
+// 			maxUtility = netUtility;
+// 		}
+// 	}
+// 	aveUtility = totalUti / tolNum;
+// 	cout << "aveUtility = " << aveUtility << endl;
+// 	cout << "maxUtility = " << maxUtility << endl;
 
 //NOrmal 
 // 	auto net1 = new Network;
@@ -34,9 +34,11 @@ int main(int argc, char *argv[]) {
 // 		net2->runPOC(0);
 // 	}
 
-	net->initTrainNet();		
-	net->trainNet();
-
+//train 
+	auto net3 = new Network;
+	net3->initGraph();
+	net3->initTrainNet();
+	net3->trainNet();
 	system("pause");
 	return argc;
 }

@@ -5,13 +5,16 @@
 #include <iostream>
 #include <queue>
 #include "neural/lib/libconvert.h"
+#include "neural/NeuralNet.h"
 #include "boost/graph/adjacency_list.hpp"
 #include "boost/graph/graph_traits.hpp"
 #include "boost/graph/edge_list.hpp"
 #include "boost/graph/dijkstra_shortest_paths.hpp"
 #include <time.h>
+#include "Timer.h"
 #include <corecrt_io.h>
 #include <direct.h>
+
 
 #define INFINITY   9999999;
 using namespace std;
@@ -71,6 +74,7 @@ private:
 	bool m_isOuterNode;
 	double* m_inData;
 	double* m_outData;
+	NeuralNet* m_netQ;
 
 
 	property_map<Graph, vertex_index_t>::type node_index = get(vertex_index, *m_conGraph);
@@ -131,6 +135,7 @@ public:
 	d_matrix*& getShortPath() {	return m_shortRouting;	}
 	vector<Node*>& getNeigherNodes() { return m_neigherNodes; }
 	vector<Edge>& getEdges() { return m_edges; }
+	NeuralNet& getNet(int i) { return m_netQ[i]; }
 	void copyIMatrix() {d_matrix::cpyData(m_IMatrix_copy, m_IMatrix);}
 	bool lessthan(const Node* node) const
 	{
@@ -152,6 +157,7 @@ public:
 	void generatePaPerRound();
 	void channelAssignmentCopy(int ch);
 	void saveNodeData(int inDataSize, bool clean);
+	void initNerualNet();
 
 };
 

@@ -21,6 +21,8 @@ Node::Node()
 	m_routingMatrix->initData(0);
 	m_shortRouting->initData(-1);
 	m_inData = nullptr;
+	int nnum = 3;
+	m_netQ = new NeuralNet[nnum];
 	__init();
 }
 
@@ -32,6 +34,7 @@ Node::~Node()
 // 	delete m_OCMatrix;
 // 	delete m_routingMatrix;
 // 	delete m_shortRouting;
+
 }
 
 void Node::__init() {
@@ -473,6 +476,14 @@ void Node::__CHMatrixTransfer() {
 			m_CHMatrix.push_back(CHNum);
 			numE++;
 		}
+		else {
+			int* CHNum = new int[11];
+			for (int i = 0; i < 11; i++) {
+				CHNum[i] = 0;
+			}
+			m_CHMatrix.push_back(CHNum);
+			numE++;
+		}
 	}
 }
 
@@ -489,7 +500,7 @@ void Node::saveNodeData(int inDataSize, bool clean)
 		_mkdir(dir);
 	}
 	vector<int*>::iterator CHi;
-	int linknum = 1;
+	int linknum = 0;
 	for (CHi = m_CHMatrix.begin(); CHi != m_CHMatrix.end(); CHi++) {
 		sprintf(filename, "%s%d%s%d%s", "node", m_id, "/link", linknum, ".txt");
 		FILE *fout = stdout;
@@ -530,4 +541,9 @@ void Node::saveNodeData(int inDataSize, bool clean)
 		linknum++;
 		}
 	}
+}
+
+void Node::initNerualNet() {
+// 	int nnum = m_edges.size();
+// 	m_netQ = new NeuralNet[nnum];
 }

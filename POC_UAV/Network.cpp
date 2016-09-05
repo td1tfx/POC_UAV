@@ -459,11 +459,12 @@ void Network::__getNodesLoad() {
 void Network::initTrainNet() {
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-		for (int j = 0; j < m_nodes.size(); j++) {
+		for (int j = 0; j < (*i)->getEdges().size(); j++) {
+			(*i)->initNerualNet();
 			(*i)->getNet(j).loadOptoin("learnConfig.ini");
 			(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
 			(*i)->getNet(j).init();
-			cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
+			cout << "node:" << (*i)->getId() << "-link:" << j << "NeuralNet init finished!" << endl;
 		}
 	}
 }
@@ -471,44 +472,109 @@ void Network::initTrainNet() {
 
 int Network::trainNet() {
 	vector<Node*>::iterator i;
-	if (Config::getInstance()->isSingleOutputMod()) {
-		for (i = m_nodes->begin(); i != m_nodes->end(); i++) {
-			Timer t;
-			t.start();
-			if (Config::getInstance()->isSingleDestMod()) {
-				for (int j = 0; j < 1; j++) {
-					(*i)->getNet(j).run();
-				}
-			}
-			else {
-				(*i)->getNet().run();
-			}
-			t.stop();
-			fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		Timer t;
+		t.start();
+		for (int j = 0; j < (*i)->getEdges().size(); j++) {
+			(*i)->getNet(j).run();
 		}
+		t.stop();
+		fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
 	}
-	else {
-		for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
-			Timer t;
-			t.start();
-			if (Config::getInstance()->isSingleDestMod()) {
-				for (int j = 0; j < m_nodes->size(); j++) {
-					(*i)->getNet(j).run();
-				}
-			}
-			else {
-				(*i)->getNet().run();
-			}
-			t.stop();
-			fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
-		}
-	}
-
 #ifdef _WIN32
 	getchar();
 #endif
 	return 0;
 }
+
+//use learning algorithm
+void Network::getAllTrainedPath() {
+
+	__updatePribyRandom();
+	vector<Node*>::iterator i;
+	totalPCount = 0;
+	wrongPCount = 0;
+	int inputGroupCount = 1;
+	int outputNodeCount = 11;
+	auto t_output = new double[outputNodeCount*inputGroupCount];
+	//auto t_Soutput = new double[sqrt(outputNodeCount)*inputGroupCount];
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		if (Config::getInstance()->isSingleDestMod()) {
+			if (Config::getInstance()->isSingleOutputMod()) {
+				for (int j = 0; j < m_nodes->size(); j++) {
+					Node* t_node = *i;
+					if (m_nodes->at(j)->isOuterNode()) {
+						totalPCount++;
+					}
+					int count = 0;
+					bool isbreak = false;
+					int t_id = 0;
+					while (t_node->getId() != j && isbreak == false) {
+						count++;
+						int pid = t_node->getId();
+						t_node->getNet(j).resetGroupCount(inputGroupCount);
+						t_node->getNet(j).activeOutputValue((*i)->getInData(), t_Soutput, inputGroupCount);
+						for (int n = 0; n < m_nodes->size(); n++) {
+							int r = t_Soutput[n];
+							if (t_Soutput[n] > 0.5) {
+								(*i)->getTrainPath()->getData(j, t_id) = n;
+								t_node = m_nodes->at(n);
+								t_id++;
+								break;
+							}
+						}
+						if (count > m_nodes->size()) {
+							for (int q = 0; q < m_nodes->size(); q++) {
+								int p = (*i)->getShortPath()->getData(j, q);
+								(*i)->getTrainPath()->getData(j, q) = p;
+								if (p == j) { break; }
+							}
+							if (m_nodes->at(j)->isOuterNode()) {
+								wrongPCount++;
+							}
+							isbreak = true;
+						}
+					}
+				}
+			}
+			else {
+				for (int j = 0; j < m_nodes->size(); j++) {
+					(*i)->getNet(j).resetGroupCount(inputGroupCount);
+					//(*i)->getNet(j).InputNodeCount = m_nodes->size();
+					//(*i)->getNet(j).OutputNodeCount = outputNodeCount;
+					(*i)->getNet(j).activeOutputValue((*i)->getInData(), t_Soutput, inputGroupCount);
+					for (int n = 0; n < m_nodes->size(); n++) {
+						if (t_Soutput[n] > 0.5) {
+							(*i)->getRoutingMatrix()->getData(j, n) = 1;
+						}
+						else {
+							(*i)->getRoutingMatrix()->getData(j, n) = 0;
+						}
+					}
+				}
+			}
+		}
+		
+		/*
+		cout << "node:" << (*i)->getId() << ":";
+		for (int m = 0; m < m_nodes->size(); m++) {
+		for (int n = 0; n < m_nodes->size(); n++) {
+		cout << "-" << (*i)->getRoutingMatrix()->getData(m, n);
+		}
+		}
+		cout << endl;
+		*/
+	}
+	delete[] t_output;
+	if (Config::getInstance()->isSingleOutputMod()) {
+	}
+	else {
+		for (i = m_outerNodes->begin(); i != m_outerNodes->end(); i++) {
+			getTrainedPath((*i)->getId());
+		}
+	}
+}
+
 
 string Network::toString(int a)
 {
