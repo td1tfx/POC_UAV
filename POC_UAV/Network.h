@@ -43,15 +43,16 @@ public:
 	~Network();
 	void runPOC(int num);
 	void runNormal();
-	float runPOCGame(int num);
+	float runPOCGame(int num, bool isSave = true);
 
 	void initGraph();
 	void initGraphByFile();
 	void printCH();
 	void printPath();
+	void printWrongCount();
 	void getAllShortestPath();
 	void initTrainNet();
-	void getAllTrainedPath();
+	void getAllCHbyDP();
 	int trainNet();
 
 

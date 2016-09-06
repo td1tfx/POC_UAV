@@ -91,7 +91,7 @@ private:
 	void __initOCMatrix();
 	void __updateIF();
 	void __updateIFCopy();
-	void __CHMatrixTransfer();
+	void __CHMatrixTransfer();	
 	bool __isCAValid(int ch);
 	float __getIF(float dist, int ch1, int ch2);
 	int __chooseRadio(Node n);
@@ -135,6 +135,7 @@ public:
 	d_matrix*& getShortPath() {	return m_shortRouting;	}
 	vector<Node*>& getNeigherNodes() { return m_neigherNodes; }
 	vector<Edge>& getEdges() { return m_edges; }
+	vector<int*>& getCHMatrix() { return m_CHMatrix; }
 	NeuralNet& getNet(int i) { return m_netQ[i]; }
 	void copyIMatrix() {d_matrix::cpyData(m_IMatrix_copy, m_IMatrix);}
 	bool lessthan(const Node* node) const
@@ -158,6 +159,7 @@ public:
 	void channelAssignmentCopy(int ch);
 	void saveNodeData(int inDataSize, bool clean);
 	void initNerualNet();
+	void CHMatrixTransferBack();
 
 };
 

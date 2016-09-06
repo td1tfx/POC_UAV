@@ -487,6 +487,20 @@ void Node::__CHMatrixTransfer() {
 	}
 }
 
+void Node::CHMatrixTransferBack() {
+
+	vector<int*>::iterator ch;
+	int numE = 0;
+	for (ch = m_CHMatrix.begin(); ch != m_CHMatrix.end(); ch++) {
+		for (int i = 0; i < 11; i++) {
+			if ((*ch)[i] > 0) {
+				edges_weight_channel[m_edges.at(numE)] = i;
+			}
+		}
+		numE++;
+	}
+}
+
 
 void Node::saveNodeData(int inDataSize, bool clean)
 {
