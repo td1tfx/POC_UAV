@@ -22,6 +22,7 @@ private:
 	property_map<DGraph, edge_weight_t>::type edges_weight_load = get(edge_weight, *m_dGraph);
 	double* m_inData;
 	int m_inDataSize;
+	float m_cuTime;
 
 	int __initGrid();
 	int __initRandom();
@@ -53,6 +54,8 @@ public:
 	void getAllShortestPath();
 	void initTrainNet();
 	void getAllCHbyDP();
+	void runRounds(int num);
+	void runOneRound();
 	int trainNet();
 
 

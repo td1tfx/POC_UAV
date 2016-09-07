@@ -7,15 +7,17 @@ Node::Node()
 {
 	m_IMatrix = new d_matrix(11, 12, -2);
 	m_IMatrix_copy = new d_matrix(11, 12, -2);
-	__initIMatrix();
 	m_OCMatrix = new d_matrix(3, 2, -2);
-	__initOCMatrix();
 	m_linkNum = 0;
 	m_packageCount = 0;
 	m_nodeTime = 0;
 	m_GWHop = 0;
 	int maxRow = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
 	int maxColumn = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
+	float t_pSize = Config::getInstance()->getPackageSize();
+	float t_bWidth = Config::getInstance()->getBandwidth();
+	m_perTransDelay = t_pSize / t_bWidth;
+	m_perTransSignalDelay = Config::getInstance()->getSignalSize() / t_bWidth;
 	m_routingMatrix = new d_matrix(maxRow, maxColumn);
 	m_shortRouting = new d_matrix(maxRow, maxColumn);
 	m_routingMatrix->initData(0);
@@ -36,6 +38,7 @@ Node::~Node()
 // 	delete m_shortRouting;
 
 }
+
 
 void Node::__init() {
 	if (m_id / Config::getInstance()->getMaxRow() == 0 || m_id / Config::getInstance()->getMaxRow() == Config::getInstance()->getMaxRow() - 1
@@ -283,6 +286,18 @@ void Node::channelAssignmentCopy(int ch) {
 	//return NULL;
 }
 
+void Node::initialPackage() {
+	if (m_id / Config::getInstance()->getMaxColumn() == 0 || m_id / Config::getInstance()->getMaxColumn() == Config::getInstance()->getMaxRow() - 1
+		|| m_id % Config::getInstance()->getMaxColumn() == 0 || m_id % Config::getInstance()->getMaxColumn() == Config::getInstance()->getMaxColumn() - 1) {
+		m_isOuterNode = true;
+		//paGenerateRate = rand() % (int)Config::getInstance()->getMaxGenerateRate() + 1;
+	}
+	else {
+		m_isOuterNode = false;
+		//paGenerateRate = 0;
+	}
+}
+
 void Node::generatePaPerRound() {
 	double pNumPer = (double)(Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
 	double gRatePerRound = Config::getInstance()->getMaxGenerateRate() / pNumPer;
@@ -299,15 +314,18 @@ void Node::generatePaPerRound() {
 void Node::generatePackage() {
 	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
 	Package *m_package = new Package(pid, m_nodeTime);
-	int dest = m_GWNum;
+	int dest = m_id;
+	while (dest == m_id) {
+		dest = m_outerNodes.at(rand() % m_outerNodes.size())->getId();
+	}
 	m_package->setSource(m_id);
 	m_package->setDestination(dest);
 	m_package->setGenerateTime(m_nodeTime);
-	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
-	m_package->setPathSize(size);
-	for (int i = 0; i < size; i++) {
-		m_package->getPathData(i) = m_shortRouting->getData(dest, i);
-	}
+// 	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
+// 	m_package->setPathSize(size);
+// 	for (int i = 0; i < size; i++) {
+// 		m_package->getPathData(i) = m_trainRouting->getData(dest, i);
+// 	}
 	m_qServe.push(m_package);
 	m_packageCount++;
 }
@@ -373,10 +391,10 @@ float Node::bestResponseInAoCAG() {
 		float maxUtility_edge = 0;
 		for (int i = 0; i < 11; i++) {
 			float oneUtility = 0;
-			vector<Node*>::iterator nodei;
-			for (nodei = m_nodes.begin(); nodei != m_nodes.end(); nodei++) {
-				(*nodei)->copyIMatrix();
-			}
+// 			vector<Node*>::iterator nodei;
+// 			for (nodei = m_nodes.begin(); nodei != m_nodes.end(); nodei++) {
+// 				(*nodei)->copyIMatrix();
+// 			}
 			int t_ch = edges_weight_channel[*eii];
 			edges_weight_channel[*eii] = i;
 			//__updateIMatrixCopy(*eii, i);
@@ -448,7 +466,7 @@ float Node::calculateUtilityInAoCAG() {
 			int targetNode = target(*ei, *m_conGraph);
 			j = edges_weight_channel[*ei];
 			for (int i = 1; i < 12; i++) {
-				int p1 = m_IMatrix_copy->getData(j, i);
+				int p1 = m_IMatrix->getData(j, i);
 				//int p2 = m_nodes.at(targetNode)->getIMatrixCopy()->getData(j, i);
 				interN = interN + p1;
 			}
@@ -456,7 +474,8 @@ float Node::calculateUtilityInAoCAG() {
 			up = up + up_t;
 		}
 	}
-	float utility = up / (log(m_GWHop + 1));
+/*	float utility = up / (log(m_GWHop + 1));*/
+	float utility = up;
 	return utility;
 }
 
@@ -555,6 +574,58 @@ void Node::saveNodeData(int inDataSize, bool clean)
 		linknum++;
 		}
 	}
+}
+
+Package* Node::outPackage() {
+	Package* out_package = m_qServe.front();
+	m_qServe.pop();
+	return out_package;
+}
+
+void Node::inPackage(Package* in_package) {
+	in_package->getHop()++;
+	if (in_package->getDestination() == m_id) {
+		if (in_package->getGenerateTime() == m_nodeTime) {	//this is to avoid the same round
+			in_package->setTerminalTime(m_nodeTime + m_perTransDelay);
+		}
+		if (in_package->isSignaling()) {
+			if (in_package->getHop() > 3) {
+
+			}
+			else {
+				vector<Node*>::iterator iter;
+				for (iter = m_neigherNodes.begin(); iter != m_neigherNodes.end(); iter++) {
+					int dest = (*iter)->getId();
+// 					if (istrained) {
+// 						if (!m_nodes->at(dest)->isOuterNode())
+// 							continue;
+// 					}
+// 					Package *sPac = new Package;
+// 					*sPac = *in_package;
+// 					sPac->setDestination(dest);
+// 					qServe->push(sPac);
+ 				}
+// 				//need more
+ 			}
+// 			qSFinished->push(in_package);
+		}
+		else {
+			in_package->setTerminalTime(m_nodeTime);
+			m_qFinished.push(in_package);
+		}
+	}
+	else {
+		m_qServe.push(in_package);
+	}
+}
+
+void Node::initCHMatrix() {
+	m_CHMatrix.clear();
+}
+
+void Node::initMatrix() {
+	__initIMatrix();
+	__initOCMatrix();
 }
 
 void Node::initNerualNet() {

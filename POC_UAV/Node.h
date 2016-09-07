@@ -56,6 +56,8 @@ private:
 	float m_nodeTime;
 	float m_packageRate;
 	float m_x, m_y, m_z;
+	float m_perTransDelay;
+	float m_perTransSignalDelay;
 	d_matrix* m_IMatrix;
 	d_matrix* m_IMatrix_copy;
 	d_matrix* m_OCMatrix;
@@ -121,12 +123,17 @@ public:
 	int& getGWHop() { return m_GWHop; }
 	int getRandom() { return m_random; }
 	int getPackageNum() { return m_qServe.size();}
+	int getNextNode(int dest) {	return m_shortRouting->getData(dest, 0); }
 	bool& getIsGW() { return m_isGW; }
 	bool& isOuterNode() { return m_isOuterNode; }
+	bool isQueueEmpty() { return m_qServe.empty(); }
 	float& getX() { return m_x; }
 	float& getY() { return m_y; }
 	float& getZ() { return m_z; }
 	float& getPackageRate() { return m_packageRate; }
+	float& getNodeTime() { return m_nodeTime; }
+	float getPerTransDelay() { return m_perTransDelay; }
+	float getPerTransSignalDelay() { return m_perTransSignalDelay; }
 	double*& getInData() { return m_inData; }
 	d_matrix* getIMatrix() { return m_IMatrix; }
 	d_matrix* getIMatrixCopy() { return m_IMatrix_copy; }
@@ -140,7 +147,7 @@ public:
 	void copyIMatrix() {d_matrix::cpyData(m_IMatrix_copy, m_IMatrix);}
 	bool lessthan(const Node* node) const
 	{
-		return m_neigherNodes.size() < ((Node*)node)->getNeigherNodes().size();
+		return m_qServe.size() < ((Node*)node)->getPackageNum();
 	}
 	bool lessthanRandom(const Node* node) const
 	{
@@ -160,6 +167,12 @@ public:
 	void saveNodeData(int inDataSize, bool clean);
 	void initNerualNet();
 	void CHMatrixTransferBack();
+	void inPackage(Package* in_package);
+	void initCHMatrix();
+	void initMatrix();
+	void initialPackage();
+	Package* outPackage();
+
 
 };
 

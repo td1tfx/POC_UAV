@@ -4,6 +4,7 @@
 
 Network::Network()
 {
+	m_cuTime = 0;
 }
 
 
@@ -21,6 +22,7 @@ int Network::__initGrid() {
 			t_node->setId(i * Config::getInstance()->getMaxColumn() + j);
 			t_node->setPos(i * 10, j * 10, 0);
 			t_node->getGWNum() = GW;
+			t_node->initialPackage();
 			//t_node->setRamdomRadios();
 			m_nodes.push_back(t_node);
 			if (t_node->isOuterNode()) {
@@ -113,7 +115,7 @@ void Network::initGraph() {
 		m_conGraph = new Graph;
 		m_dGraph = new DGraph;
 		__createNeighborGraph();
-		__updatePribyLinkNum();
+		//__updatePribyLinkNum();
 	}
 }
 
@@ -127,6 +129,7 @@ void Network::initGraphByFile() {
 	}
 }
 
+//aborted
 void Network::__updatePribyLinkNum() {
 	if (!m_priNodes.empty()) {
 		std::cout << "wrong!!!priNodes is not empty!" << endl;
@@ -145,11 +148,24 @@ void Network::__updatePribyLoad() {
 		std::cout << "wrong!!!priNodes is not empty!" << endl;
 		return;
 	}
+	float maxLoad = 0;
 	vector<Node*>::iterator i;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		m_priNodes.push(*i);
 		(*i)->setMNodes(m_nodes);
 		(*i)->setOuterNodes(m_outerNodes);
+		if (maxLoad < (*i)->getPackageNum()) {
+			maxLoad = (*i)->getPackageNum();
+		}
+	}
+
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		m_inData[(*i)->getId()] = (*i)->getPackageNum() / maxLoad;
+	}
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		(*i)->getInData() = m_inData;
+		(*i)->initMatrix();
+		(*i)->initCHMatrix();
 	}
 }
 
@@ -162,6 +178,8 @@ void Network::__updatePribyRandom() {
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		(*i)->setRandom(rand());
 		m_priNodesRandom.push(*i);
+		(*i)->setMNodes(m_nodes);
+		(*i)->setOuterNodes(m_outerNodes);
 		if (maxLoad < (*i)->getRandom()) {
 			maxLoad = (*i)->getRandom();
 		}
@@ -214,19 +232,18 @@ void Network::runNormal()
 
 float Network::runPOCGame(int num, bool isSave)
 {
-	getAllShortestPath();
 	float max = 0;
 	int time = 0;
 	iterTimes = 0;
-	__updatePribyRandom();
+	__updatePribyLoad();
 	//vector<Node*>::iterator i;
-	while (!m_priNodesRandom.empty()) {
-		auto t_node = (Node*)m_priNodesRandom.top();
+	while (!m_priNodes.empty()) {
+		auto t_node = (Node*)m_priNodes.top();
 		//std::cout << "node:" << (*i)->getId() << "->edges:" << (*i)->getNeigherNodes().size() << endl;
 		float utility = t_node->bestResponseInAoCAG();
 		max += utility;
 		//t_node->printIMatrix();
-		m_priNodesRandom.pop();
+		m_priNodes.pop();
 		if (isSave) {
 			if (num == 0) {
 				t_node->saveNodeData(m_inDataSize, 1);
@@ -303,7 +320,20 @@ void Network::__createNeighborGraph() {
 		}
 		t_node->setMcongraph(m_conGraph);
 	}
+}
 
+void Network::__updateNeighborGraph() {
+	//std::cout << "edges(g) = ";
+	Dedge_iter ei, ei_end;
+	int weight2;
+	for (tie(ei, ei_end) = edges(*m_dGraph); ei != ei_end; ei++) {
+		weight2 = m_nodes.at(target(*ei, *m_dGraph))->getPackageNum();
+		edges_weight_load[*ei] = weight2 + 1;
+	}
+	edge_iter chi, chi_end;
+	for (tie(chi, chi_end) = edges(*m_conGraph); chi != chi_end; chi++) {
+		edges_weight_channel[*chi] = -1;
+	}
 }
 
 void Network::printCH() {
@@ -324,7 +354,7 @@ void Network::printCH() {
 }
 
 void Network::printWrongCount() {
-	float wrongRatio = wrongRatio / totalPCount / 1.000;
+	float wrongRatio = (float)wrongPCount / (float)totalPCount / 1.000;
 	std::cout << "totalCount = " << totalPCount << ";Wrong_Count = " << wrongPCount << endl;
 	std::cout << "wrongRatio = " << wrongRatio << endl;
 }
@@ -411,16 +441,6 @@ void Network::getAllShortestPath() {
 	__getNodesLoad();
 }
 
-void Network::__updateNeighborGraph() {
-	//std::cout << "edges(g) = ";
-	Dedge_iter ei, ei_end;
-	int weight2;
-	for (tie(ei, ei_end) = edges(*m_dGraph); ei != ei_end; ei++) {
-		weight2 = m_nodes.at(target(*ei, *m_dGraph))->getPackageNum();
-		edges_weight_load[*ei] = weight2 + 1;
-	}
-}
-
 void Network::__getNodesLoad() {
 	//runOneSignalRound(isTrained);
 	int maxPackageNum = 1;
@@ -497,7 +517,7 @@ int Network::trainNet() {
 
 //use learning algorithm
 void Network::getAllCHbyDP() {
-	__updatePribyRandom();
+	__updatePribyLoad();
 	vector<Node*>::iterator i;
 	totalPCount = 0;
 	wrongPCount = 0;
@@ -507,6 +527,7 @@ void Network::getAllCHbyDP() {
 	auto t_Soutput = new double[11 * inputGroupCount];
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		for (int j = 0; j < (*i)->getEdges().size(); j++) {
+			int test = (*i)->getEdges().size();
 			Node* t_node = *i;
 			int* t_CHmarix = new int[11]; 
 			totalPCount++;
@@ -523,7 +544,7 @@ void Network::getAllCHbyDP() {
 					t_CHmarix[n] = 0;
 				}
 			}
-			if (oneCount != 1) {
+			if (oneCount < 1 || oneCount > 2) {
 				wrongPCount++;
 			}
 			(*i)->getCHMatrix().push_back(t_CHmarix);
@@ -535,6 +556,47 @@ void Network::getAllCHbyDP() {
 	printCH();
 }
 
+void Network::runRounds(int num) {
+	for (int i = 0; i < num; i++) {
+		runOneRound();
+	}
+	//cout << "run round:" << num << " finisid!" << endl;
+}
+
+void Network::runOneRound() {
+	vector<Node*>::iterator i;
+	float t_minTime = 9999999999;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		if ((*i)->getNodeTime() > m_cuTime) {
+			continue;
+		}
+		if ((*i)->isOuterNode()) {
+			(*i)->generatePaPerRound();
+		}
+		if (!(*i)->isQueueEmpty()) {
+			Package* t_package = (*i)->outPackage();
+			int t_dest = t_package->getDestination();
+			int t_nextNodeId = (*i)->getNextNode(t_dest);
+			Node* j = m_nodes.at(t_nextNodeId);
+			j->inPackage(t_package);
+			//float t_sigtime = (*i)->getPerTransSignalDelay();
+			//float t_ptime = (*i)->getPerTransDelay();
+			if (t_package->isSignaling()) {
+				(*i)->getNodeTime() += (*i)->getPerTransSignalDelay();
+			}
+			else {
+				(*i)->getNodeTime() += (*i)->getPerTransDelay();
+			}
+		}
+		else {
+			(*i)->getNodeTime() += (*i)->getPerTransDelay();
+		}
+		if (t_minTime >= (*i)->getNodeTime()) {
+			t_minTime = (*i)->getNodeTime();
+		}
+	}
+	m_cuTime = t_minTime;
+}
 
 string Network::toString(int a)
 {

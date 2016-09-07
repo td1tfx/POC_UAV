@@ -6,21 +6,25 @@ int main(int argc, char *argv[]) {
 	int tolNum = 1000;
 
 //POC game
-// 	float totalUti = 0;
-// 	float aveUtility = 0;
-// 	float maxUtility = 0;
-// 	for (int i = 0; i < tolNum; i++) {
-// 		auto net = new Network;
-// 		net->initGraph();
-// 		float netUtility = net->runPOCGame(i);
-// 		totalUti += netUtility;
-// 		if (netUtility > maxUtility) {
-// 			maxUtility = netUtility;
-// 		}
-// 	}
-// 	aveUtility = totalUti / tolNum;
-// 	cout << "aveUtility = " << aveUtility << endl;
-// 	cout << "maxUtility = " << maxUtility << endl;
+	float totalUti = 0;
+	float aveUtility = 0;
+	float maxUtility = 0;
+		auto net = new Network;
+		net->initGraph();
+		net->getAllShortestPath();
+		net->runPOCGame(1, false);
+	for (int i = 0; i < tolNum; i++) {
+		net->runRounds(1);
+		net->getAllShortestPath();
+		float netUtility = net->runPOCGame(i);
+		totalUti += netUtility;
+		if (netUtility > maxUtility) {
+			maxUtility = netUtility;
+		}
+	}
+	aveUtility = totalUti / tolNum;
+	cout << "aveUtility = " << aveUtility << endl;
+	cout << "maxUtility = " << maxUtility << endl;
 
 
 //NOrmal 
@@ -36,10 +40,10 @@ int main(int argc, char *argv[]) {
 // 	}
 
 //train DP
-	auto net3 = new Network;
-	net3->initGraph();
-	net3->initTrainNet();
-	net3->trainNet();
+// 	auto net3 = new Network;
+// 	net3->initGraph();
+// 	net3->initTrainNet();
+// 	net3->trainNet();
 
 
 //POC DP and compare with POC game
@@ -52,7 +56,7 @@ int main(int argc, char *argv[]) {
 // 		net4->initGraph();
 // 		net4->initTrainNet();
 // 		net4->getAllCHbyDP();
-// 		float netUtility = net4->runPOCGame(i,false);
+// 		//float netUtility = net4->runPOCGame(i,false);
 // 		net4->printWrongCount();
 // 	}
 
