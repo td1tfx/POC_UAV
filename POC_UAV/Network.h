@@ -30,7 +30,6 @@ private:
 	void __createNeighborGraph();
 	void __updateNeighborGraph();
 	void __updatePribyLinkNum();
-	void __updatePribyLoad();
 	void __updatePribyRandom();
 	void __getNodesLoad();
 	bool __getShortestPath(int destId);
@@ -56,6 +55,7 @@ public:
 	void getAllCHbyDP();
 	void runRounds(int num);
 	void runOneRound();
+	void updatePribyLoad();
 	int trainNet();
 
 

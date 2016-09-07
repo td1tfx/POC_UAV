@@ -143,7 +143,7 @@ void Network::__updatePribyLinkNum() {
 	}
 }
 
-void Network::__updatePribyLoad() {
+void Network::updatePribyLoad() {
 	if (!m_priNodes.empty()) {
 		std::cout << "wrong!!!priNodes is not empty!" << endl;
 		return;
@@ -235,7 +235,6 @@ float Network::runPOCGame(int num, bool isSave)
 	float max = 0;
 	int time = 0;
 	iterTimes = 0;
-	__updatePribyLoad();
 	//vector<Node*>::iterator i;
 	while (!m_priNodes.empty()) {
 		auto t_node = (Node*)m_priNodes.top();
@@ -517,7 +516,6 @@ int Network::trainNet() {
 
 //use learning algorithm
 void Network::getAllCHbyDP() {
-	__updatePribyLoad();
 	vector<Node*>::iterator i;
 	totalPCount = 0;
 	wrongPCount = 0;
@@ -544,16 +542,22 @@ void Network::getAllCHbyDP() {
 					t_CHmarix[n] = 0;
 				}
 			}
-			if (oneCount < 1 || oneCount > 2) {
+			if (oneCount != 1) {
 				wrongPCount++;
 			}
-			(*i)->getCHMatrix().push_back(t_CHmarix);
+			t_node->getCHMatrix().push_back(t_CHmarix);
 			t_node->CHMatrixTransferBack();
 		}
 	}
+	while (!m_priNodes.empty()) {
+		Node* t_node = m_priNodes.top();
+		//std::cout << "node:" << (*i)->getId() << "->edges:" << (*i)->getNeigherNodes().size() << endl;
+		//t_node->printIMatrix();
+		m_priNodes.pop();
+	}
+	//printCH();
 	delete[] t_output;
 	delete[] t_Soutput;
-	printCH();
 }
 
 void Network::runRounds(int num) {

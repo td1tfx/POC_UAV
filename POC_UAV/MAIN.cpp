@@ -6,25 +6,27 @@ int main(int argc, char *argv[]) {
 	int tolNum = 1000;
 
 //POC game
-	float totalUti = 0;
-	float aveUtility = 0;
-	float maxUtility = 0;
-		auto net = new Network;
-		net->initGraph();
-		net->getAllShortestPath();
-		net->runPOCGame(1, false);
-	for (int i = 0; i < tolNum; i++) {
-		net->runRounds(1);
-		net->getAllShortestPath();
-		float netUtility = net->runPOCGame(i);
-		totalUti += netUtility;
-		if (netUtility > maxUtility) {
-			maxUtility = netUtility;
-		}
-	}
-	aveUtility = totalUti / tolNum;
-	cout << "aveUtility = " << aveUtility << endl;
-	cout << "maxUtility = " << maxUtility << endl;
+// 	float totalUti = 0;
+// 	float aveUtility = 0;
+// 	float maxUtility = 0;
+// 		auto net = new Network;
+// 		net->initGraph();
+// 		net->getAllShortestPath();
+// 		net->updatePribyLoad();
+// 		net->runPOCGame(1, false);
+// 	for (int i = 0; i < tolNum; i++) {
+// 		net->runRounds(1);
+// 		net->getAllShortestPath();
+// 		net->updatePribyLoad();
+// 		float netUtility = net->runPOCGame(i,false);
+// 		totalUti += netUtility;
+// 		if (netUtility > maxUtility) {
+// 			maxUtility = netUtility;
+// 		}
+// 	}
+// 	aveUtility = totalUti / tolNum;
+// 	cout << "aveUtility = " << aveUtility << endl;
+// 	cout << "maxUtility = " << maxUtility << endl;
 
 
 //NOrmal 
@@ -47,19 +49,31 @@ int main(int argc, char *argv[]) {
 
 
 //POC DP and compare with POC game
-// 	tolNum = 1;
-// 	float totalUti = 0;
-// 	float aveUtility = 0;
-// 	float maxUtility = 0;
-// 	for (int i = 0; i < tolNum; i++) {
-// 		auto net4 = new Network;
-// 		net4->initGraph();
-// 		net4->initTrainNet();
-// 		net4->getAllCHbyDP();
-// 		//float netUtility = net4->runPOCGame(i,false);
-// 		net4->printWrongCount();
-// 	}
 
+	tolNum = 100;
+	float totalUti = 0;
+	float aveUtility = 0;
+	float maxUtility = 0;
+	int totalWrong = 0;
+	int totalCount = 0;
+	auto net4 = new Network;
+	net4->initGraph();
+	net4->initTrainNet();
+	net4->getAllShortestPath();
+	net4->updatePribyLoad();
+	net4->getAllCHbyDP();
+	for (int i = 0; i < tolNum; i++) {
+		net4->runRounds(1);
+		net4->getAllShortestPath();
+		net4->updatePribyLoad();
+		net4->getAllCHbyDP();
+		totalCount += net4->totalPCount;
+		totalWrong += net4->wrongPCount;
+		net4->printWrongCount();
+	}
+	float wrongRatio = (float)totalWrong / (float)totalCount / 1.000;
+	std::cout << "totalCount = " << totalCount << ";TotalWrongCount = " << totalWrong << "runTimes" << tolNum << endl;
+	std::cout << "wrongRatio = " << wrongRatio << endl;
 
 	system("pause");
 	return argc;
