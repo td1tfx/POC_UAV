@@ -296,6 +296,22 @@ void Node::initialPackage() {
 		m_isOuterNode = false;
 		//paGenerateRate = 0;
 	}
+	if (m_id==4) {
+		generatePackage();
+		generatePackage();
+		generatePackage();
+		generatePackage();
+	}else if(m_id == 3) {
+		generatePackage();
+		generatePackage();
+		generatePackage();
+	}else if (m_id == 2) {
+		generatePackage();
+		generatePackage();
+	}else{
+		generatePackage();
+	}
+
 }
 
 void Node::generatePaPerRound() {
@@ -315,9 +331,9 @@ void Node::generatePackage() {
 	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
 	Package *m_package = new Package(pid, m_nodeTime);
 	int dest = m_id;
-	while (dest == m_id) {
-		dest = m_outerNodes.at(rand() % m_outerNodes.size())->getId();
-	}
+// 	while (dest == m_id) {
+// 		dest = m_outerNodes.at(rand() % m_outerNodes.size())->getId();
+// 	}
 	m_package->setSource(m_id);
 	m_package->setDestination(dest);
 	m_package->setGenerateTime(m_nodeTime);

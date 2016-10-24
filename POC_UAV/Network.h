@@ -2,6 +2,8 @@
 #include "Node.h"
 #include <vector>
 #include <queue> 
+#include "Cloudlet.h"
+#include "Cloud.h"
 
 
 
@@ -11,6 +13,10 @@ class Network
 private:
 	vector<Node*> m_nodes;
 	vector<Node*> m_outerNodes;
+	vector<UAV*> m_UAVs;
+	vector<Cloudlet*> m_cloudlets;
+	vector<User*> m_users;
+	Cloud* m_cloud;
 	priority_queue<Node*, vector<Node*>, Compare> m_priNodes;
 	priority_queue<Node*, vector<Node*>, CompareRandom> m_priNodesRandom;
 	Graph *m_conGraph;		//graph of channel assignment
@@ -24,13 +30,14 @@ private:
 	int m_inDataSize;
 	float m_cuTime;
 
+	int __initCloudletFrame();
+	int __initCloudFrame();
 	int __initGrid();
 	int __initRandom();
 	int __initRandomFromFile();
 	void __createNeighborGraph();
 	void __updateNeighborGraph();
 	void __updatePribyLinkNum();
-	void __updatePribyRandom();
 	void __getNodesLoad();
 	bool __getShortestPath(int destId);
 
@@ -56,6 +63,7 @@ public:
 	void runRounds(int num);
 	void runOneRound();
 	void updatePribyLoad();
+	void updatePribyRandom();
 	int trainNet();
 
 

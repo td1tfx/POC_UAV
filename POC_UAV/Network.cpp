@@ -1,4 +1,6 @@
 #include "Network.h"
+#include "UAV.h"
+#include "User.h"
 
 
 
@@ -43,6 +45,116 @@ int Network::__initGrid() {
 		return m_nodes.size();
 	}
 	else return -1;
+}
+
+int Network::__initCloudletFrame() {
+	//int nodeNum = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
+	//m_nodes->resize(0);
+	//int cloud = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn() - 1;
+	//int cloudlet = rand() % (Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn() - 1);
+	m_cloud = new Cloud();
+	m_cloud->setId(0);
+	m_cloud->setPos(0, 0, 0);
+	m_cloud->getIsGW() = true;
+	m_nodes.push_back(m_cloud);
+	int t_cloudletID = 0;
+	int t_UAVID = 0;
+	for (int i = 1; i < Config::getInstance()->getMaxRow(); i++) {
+		for (int j = 0; j < Config::getInstance()->getMaxColumn(); j++) {
+			if (rand() % 100 > 30) {
+				t_UAVID++;
+				UAV* t_UAV = new UAV();
+				t_UAV->setId(i * Config::getInstance()->getMaxColumn() + j);
+				t_UAV->getUAVID() = t_UAVID;
+				t_UAV->setPos(i * 50, j * 50, 0);
+				t_UAV->getGWNum() = 0;
+				//t_UAV->initialPackage();
+				m_nodes.push_back(t_UAV);
+				m_UAVs.push_back(t_UAV);
+			}
+			else {
+				t_cloudletID++;
+				Cloudlet* t_Cl = new Cloudlet();
+				t_Cl->setId(i * Config::getInstance()->getMaxColumn() + j);
+				t_Cl->getCloudletID() = t_cloudletID;
+				t_Cl->setPos(i * 50, j * 50, 0);
+				t_Cl->getGWNum() = 0;
+				t_Cl->initialPackage();
+				m_nodes.push_back(t_Cl);
+				m_cloudlets.push_back(t_Cl);
+			}
+		}
+	}
+	int t_userID = 0;
+	for (int i = 1; i < Config::getInstance()->getMaxRow()*5; i++) {
+		for (int j = 0; j < Config::getInstance()->getMaxColumn()*5; j++) {
+			t_userID++;
+			User* t_user = new User();
+			t_user->setId(i * Config::getInstance()->getMaxColumn()*5 + j);
+			t_user->getUserID() = t_userID;
+			t_user->setPos(i * 10, j * 10, 0);
+			t_user->getGWNum() = 0;
+			t_user->initialPackage();
+			m_nodes.push_back(t_user);
+			m_users.push_back(t_user);
+		}
+	}
+
+// 	if (m_nodes.begin() != m_nodes.end()) {
+// 		if (Config::getInstance()->isFullMod()) {
+// 			m_inDataSize = m_nodes.size();
+// 		}
+// 		else {
+// 			m_inDataSize = m_outerNodes.size();
+// 		}
+// 		m_inData = new double[m_inDataSize];
+// 		memset(m_inData, 0, m_inDataSize * sizeof(m_inData));
+// 		return m_nodes.size();
+// 	}
+// 	else return -1;
+	return 1;
+}
+
+int Network::__initCloudFrame() {
+	//int nodeNum = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn();
+	//m_nodes->resize(0);
+	//int cloud = Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn() - 1;
+	//int cloudlet = rand() % (Config::getInstance()->getMaxRow()*Config::getInstance()->getMaxColumn() - 1);
+	m_cloud = new Cloud();
+	m_cloud->setId(0);
+	m_cloud->setPos(0, 0, 0);
+	m_cloud->getIsGW() = true;
+	m_nodes.push_back(m_cloud);
+	int t_UAVID = 0;
+	for (int i = 1; i < Config::getInstance()->getMaxRow(); i++) {
+		for (int j = 0; j < Config::getInstance()->getMaxColumn(); j++) {
+			t_UAVID++;
+			UAV* t_UAV = new UAV();
+			t_UAV->setId(i * Config::getInstance()->getMaxColumn() + j);
+			t_UAV->getUAVID() = t_UAVID;
+			t_UAV->setPos(i * 50, j * 50, 0);
+			t_UAV->getGWNum() = 0;
+			t_UAV->initialPackage();
+			m_nodes.push_back(t_UAV);
+			m_UAVs.push_back(t_UAV);
+		}
+	}
+	int t_userID = 0;
+	for (int i = 1; i < Config::getInstance()->getMaxRow() * 5; i++) {
+		for (int j = 0; j < Config::getInstance()->getMaxColumn() * 5; j++) {
+			t_userID++;
+			User* t_user = new User();
+			t_user->setId(i * Config::getInstance()->getMaxColumn() * 5 + j);
+			t_user->getUserID() = t_userID;
+			t_user->setPos(i * 10, j * 10, 0);
+			t_user->getGWNum() = 0;
+			t_user->initialPackage();
+			m_nodes.push_back(t_user);
+			m_users.push_back(t_user);
+		}
+	}
+
+	return 1;
 }
 
 int Network::__initRandom() {
@@ -169,7 +281,7 @@ void Network::updatePribyLoad() {
 	}
 }
 
-void Network::__updatePribyRandom() {
+void Network::updatePribyRandom() {
 	while(!m_priNodesRandom.empty()) {
 		m_priNodesRandom.pop();
 	}
@@ -255,7 +367,7 @@ float Network::runPOCGame(int num, bool isSave)
 	}
 	time++;
 	std::cout << "NetUtility:" << max << " times:" << time << endl;
-	//printCH();
+	printCH();
 	//printPath();
 	//system("pause");
 	return max;
@@ -267,7 +379,7 @@ void Network::__createNeighborGraph() {
 		vector<Node*>::iterator j;
 		//int p_id = (*i)->getId()
 		for (j = i + 1; j != m_nodes.end(); j++) {
-			if ((*i)->getDistance(**j) <= IR[0]+10) {
+			if ((*i)->getDistance(**j) <= IR[0] ) {
 // 				int rand1 = rand() % 100;
 // 				if (rand1 > 40) {
 // 					continue;

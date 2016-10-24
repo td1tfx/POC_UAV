@@ -117,6 +117,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Cloud.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="NetworkOption.h" />
@@ -137,8 +138,11 @@
     <ClInclude Include="neural\Option.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="Package.h" />
+    <ClInclude Include="UAV.h" />
+    <ClInclude Include="User.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Cloud.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="MAIN.cpp" />
     <ClCompile Include="Network.cpp" />
@@ -153,6 +157,8 @@
     <ClCompile Include="neural\NeuralNet.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="Package.cpp" />
+    <ClCompile Include="UAV.cpp" />
+    <ClCompile Include="User.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\RODL\RODL\neural\lib\cblas.a" />
