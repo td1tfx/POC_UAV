@@ -6,15 +6,21 @@ void doRecommendation();
 
 int main(int argc, char *argv[]) {
 
-	doPOC();
+	//doPOC();
+	doRecommendation();
+	
 	system("pause");
 	return argc;
 }
 
 void doRecommendation() {
 	srand(time(NULL));
-
+	auto net = new Network;
+	net->initCloudletGraph();
 }
+
+
+
 
 void doPOC(){
 

@@ -84,6 +84,9 @@
     <ClInclude Include="Cloud.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Cloudlet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Node.cpp">
@@ -135,6 +138,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Cloud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Cloudlet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

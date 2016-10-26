@@ -1,6 +1,5 @@
 #include "Network.h"
-#include "UAV.h"
-#include "User.h"
+
 
 
 
@@ -56,11 +55,16 @@ int Network::__initCloudletFrame() {
 	m_cloud->setId(0);
 	m_cloud->setPos(0, 0, 0);
 	m_cloud->getIsGW() = true;
+	m_cloud->initialPackage();
 	m_nodes.push_back(m_cloud);
 	int t_cloudletID = 0;
 	int t_UAVID = 0;
-	for (int i = 1; i < Config::getInstance()->getMaxRow(); i++) {
+	for (int i = 0; i < Config::getInstance()->getMaxRow(); i++) {
 		for (int j = 0; j < Config::getInstance()->getMaxColumn(); j++) {
+			if (i == j && j == 0) {
+				continue;
+			}
+			int test = i * Config::getInstance()->getMaxColumn() + j;
 			if (rand() % 100 > 30) {
 				t_UAVID++;
 				UAV* t_UAV = new UAV();
@@ -68,7 +72,7 @@ int Network::__initCloudletFrame() {
 				t_UAV->getUAVID() = t_UAVID;
 				t_UAV->setPos(i * 50, j * 50, 0);
 				t_UAV->getGWNum() = 0;
-				//t_UAV->initialPackage();
+				t_UAV->initialPackage();
 				m_nodes.push_back(t_UAV);
 				m_UAVs.push_back(t_UAV);
 			}
@@ -81,16 +85,21 @@ int Network::__initCloudletFrame() {
 				t_Cl->getGWNum() = 0;
 				t_Cl->initialPackage();
 				m_nodes.push_back(t_Cl);
+				m_UAVs.push_back(t_Cl);
 				m_cloudlets.push_back(t_Cl);
 			}
 		}
 	}
+	int t_offset = m_nodes.size();
 	int t_userID = 0;
-	for (int i = 1; i < Config::getInstance()->getMaxRow()*5; i++) {
+	for (int i = 0; i < Config::getInstance()->getMaxRow()*5; i++) {
 		for (int j = 0; j < Config::getInstance()->getMaxColumn()*5; j++) {
+			if (i == j && j == 0) {
+				continue;
+			}
 			t_userID++;
 			User* t_user = new User();
-			t_user->setId(i * Config::getInstance()->getMaxColumn()*5 + j);
+			t_user->setId(t_offset + i * Config::getInstance()->getMaxColumn()*5 + j);
 			t_user->getUserID() = t_userID;
 			t_user->setPos(i * 10, j * 10, 0);
 			t_user->getGWNum() = 0;
@@ -100,18 +109,6 @@ int Network::__initCloudletFrame() {
 		}
 	}
 
-// 	if (m_nodes.begin() != m_nodes.end()) {
-// 		if (Config::getInstance()->isFullMod()) {
-// 			m_inDataSize = m_nodes.size();
-// 		}
-// 		else {
-// 			m_inDataSize = m_outerNodes.size();
-// 		}
-// 		m_inData = new double[m_inDataSize];
-// 		memset(m_inData, 0, m_inDataSize * sizeof(m_inData));
-// 		return m_nodes.size();
-// 	}
-// 	else return -1;
 	return 1;
 }
 
@@ -227,6 +224,16 @@ void Network::initGraph() {
 		m_conGraph = new Graph;
 		m_dGraph = new DGraph;
 		__createNeighborGraph();
+		//__updatePribyLinkNum();
+	}
+}
+
+void Network::initCloudletGraph() {
+	if (int text = __initCloudletFrame()) {
+		//cuTime = 0;
+		m_conGraph = new Graph;
+		m_dGraph = new DGraph;
+		__createCloudletGraph();
 		//__updatePribyLinkNum();
 	}
 }
@@ -426,6 +433,116 @@ void Network::__createNeighborGraph() {
 		{
 			e = *out_i;
 			Vertex src = source(e, *m_conGraph), targ = target(e, *m_conGraph);
+			t_node->getEdges().push_back(e);
+			t_node->getNeigherNodes().push_back(m_nodes.at(node_index[targ]));
+		}
+		t_node->setMcongraph(m_conGraph);
+	}
+}
+
+void Network::__createCloudletGraph() {
+	//connections between users and UAVs
+	vector<User*>::iterator i;
+	for (i = m_users.begin(); i != m_users.end(); i++) {
+		vector<UAV*>::iterator j;
+		for (j = m_UAVs.begin(); j != m_UAVs.end(); j++) {
+			if ((*i)->getDistance(**j) <= (*i)->getTransRange() && (*i)->getDistance(**j) <= (*j)->getTransRange()) {
+				int m = (*i)->getId();
+				int n = (*j)->getId();
+				(*i)->getLinkNum()++;
+				(*j)->getLinkNum()++;
+				string iFirst = toString((*i)->getUserID());
+				string jFirst = toString((*j)->getUAVID());
+				string linkEdge = "User" + iFirst + "->" + "UAV" + jFirst;
+				string linkEdge2 = "UAV" + jFirst + "->" + "User" + iFirst;
+				Edge ed;
+				DEdge ed2, ed3;
+				ed = (add_edge((*i)->getId(), (*j)->getId(), *m_conGraph)).first;
+				ed2 = (add_edge((*i)->getId(), (*j)->getId(), *m_dGraph)).first;
+				ed3 = (add_edge((*j)->getId(), (*i)->getId(), *m_dGraph)).first;
+				edges_index[ed] = linkEdge;
+				edges_weight_channel[ed] = -1;
+				edges_index_d[ed2] = linkEdge;
+				edges_index_d[ed3] = linkEdge2;
+				edges_weight_load[ed2] = (*j)->getPackageNum() + 1;
+				edges_weight_load[ed3] = (*i)->getPackageNum() + 1;
+			}
+		}
+	}
+	//connections between UAVs
+	vector<UAV*>::iterator i_uav;
+	for (i_uav = m_UAVs.begin(); i_uav != m_UAVs.end(); i_uav++) {
+		vector<UAV*>::iterator j_uav;
+		for (j_uav = m_UAVs.begin(); j_uav != m_UAVs.end(); j_uav++) {
+			if ((*i_uav)->getDistance(**j_uav) <= (*i_uav)->getTransRange() && (*i_uav)->getDistance(**j_uav) <= (*j_uav)->getTransRange()) {
+				int m = (*i_uav)->getId();
+				int n = (*j_uav)->getId();
+				(*i_uav)->getLinkNum()++;
+				(*j_uav)->getLinkNum()++;
+				string iFirst = toString((*i_uav)->getUAVID());
+				string jFirst = toString((*j_uav)->getUAVID());
+				string linkEdge = "UAV" + iFirst + "->" + "UAV" + jFirst;
+				string linkEdge2 = "UAV" + jFirst + "->" + "UAV" + iFirst;
+				Edge ed;
+				DEdge ed2, ed3;
+				ed = (add_edge((*i_uav)->getId(), (*j_uav)->getId(), *m_conGraph)).first;
+				ed2 = (add_edge((*i_uav)->getId(), (*j_uav)->getId(), *m_dGraph)).first;
+				ed3 = (add_edge((*j_uav)->getId(), (*i_uav)->getId(), *m_dGraph)).first;
+				edges_index[ed] = linkEdge;
+				edges_weight_channel[ed] = -1;
+				edges_index_d[ed2] = linkEdge;
+				edges_index_d[ed3] = linkEdge2;
+				edges_weight_load[ed2] = (*j_uav)->getPackageNum() + 1;
+				edges_weight_load[ed3] = (*i_uav)->getPackageNum() + 1;
+			}
+		}
+	}
+	//connections between UAV and cloud
+	m_cloud;
+	vector<UAV*>::iterator j_uav;
+	for (j_uav = m_UAVs.begin(); j_uav != m_UAVs.end(); j_uav++) {
+		if ((m_cloud)->getDistance(**j_uav) <= (m_cloud)->getTransRange() && (m_cloud)->getDistance(**j_uav) <= (*j_uav)->getTransRange()) {
+			int m = m_cloud->getId();
+			int n = (*j_uav)->getId();
+			m_cloud->getLinkNum()++;
+			(*j_uav)->getLinkNum()++;
+			string iFirst = toString(m_cloud->getId());
+			string jFirst = toString((*j_uav)->getUAVID());
+			string linkEdge = "cloud" + iFirst + "->" + "UAV" + jFirst;
+			string linkEdge2 = "UAV" + jFirst + "->" + "cloud" + iFirst;
+			Edge ed;
+			DEdge ed2, ed3;
+			ed = (add_edge(m_cloud->getId(), (*j_uav)->getId(), *m_conGraph)).first;
+			ed2 = (add_edge(m_cloud->getId(), (*j_uav)->getId(), *m_dGraph)).first;
+			ed3 = (add_edge((*j_uav)->getId(), m_cloud->getId(), *m_dGraph)).first;
+			edges_index[ed] = linkEdge;
+			edges_weight_channel[ed] = -1;
+			edges_index_d[ed2] = linkEdge;
+			edges_index_d[ed3] = linkEdge2;
+			edges_weight_load[ed2] = (*j_uav)->getPackageNum() + 1;
+			edges_weight_load[ed3] = m_cloud->getPackageNum() + 1;
+		}
+	}
+
+	pair<vertex_iter, vertex_iter> vp;
+	for (vp = vertices(*m_conGraph); vp.first != vp.second; ++vp.first) {
+		int f = node_index[*vp.second];
+		int p = node_index[*vp.first];
+		Node* t_node = m_nodes.at(node_index[*vp.first]);
+		Vertex pV = *vp.first;
+		// 		adj_iter ai, ai_end;
+		// 		for (tie(ai, ai_end) = adjacent_vertices(pV, *m_conGraph); ai != ai_end; ++ai) {
+		// 			int nextNode = node_index[*ai];
+		// 			t_node->getNeigherNodes().push_back(m_nodes.at(nextNode));
+		// 		}
+		out_edge_iter out_i, out_end;
+		Edge e;
+		for (tie(out_i, out_end) = out_edges(pV, *m_conGraph); out_i != out_end; ++out_i)
+		{
+			e = *out_i;
+			Vertex src = source(e, *m_conGraph), targ = target(e, *m_conGraph);
+// 			int text = node_index[targ];
+// 			m_nodes.at(node_index[targ])->getId();
 			t_node->getEdges().push_back(e);
 			t_node->getNeigherNodes().push_back(m_nodes.at(node_index[targ]));
 		}

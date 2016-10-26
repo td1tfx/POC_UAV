@@ -118,6 +118,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Cloud.h" />
+    <ClInclude Include="Cloudlet.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="NetworkOption.h" />
@@ -143,6 +144,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Cloud.cpp" />
+    <ClCompile Include="Cloudlet.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="MAIN.cpp" />
     <ClCompile Include="Network.cpp" />

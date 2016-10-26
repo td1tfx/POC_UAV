@@ -4,6 +4,8 @@
 #include <queue> 
 #include "Cloudlet.h"
 #include "Cloud.h"
+#include "User.h"
+#include "UAV.h"
 
 
 
@@ -36,6 +38,7 @@ private:
 	int __initRandom();
 	int __initRandomFromFile();
 	void __createNeighborGraph();
+	void __createCloudletGraph();
 	void __updateNeighborGraph();
 	void __updatePribyLinkNum();
 	void __getNodesLoad();
@@ -54,6 +57,7 @@ public:
 
 	void initGraph();
 	void initGraphByFile();
+	void initCloudletGraph();
 	void printCH();
 	void printPath();
 	void printWrongCount();
