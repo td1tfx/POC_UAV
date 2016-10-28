@@ -17,6 +17,7 @@ void doRecommendation() {
 	srand(time(NULL));
 	auto net = new Network;
 	net->initCloudletGraph();
+	net->getAllTypeShortestPath();
 }
 
 

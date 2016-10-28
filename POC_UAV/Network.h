@@ -42,7 +42,7 @@ private:
 	void __updateNeighborGraph();
 	void __updatePribyLinkNum();
 	void __getNodesLoad();
-	bool __getShortestPath(int destId);
+	bool __getShortestPath(int destId, int type = 0);
 
 public:
 
@@ -62,6 +62,7 @@ public:
 	void printPath();
 	void printWrongCount();
 	void getAllShortestPath();
+	void getAllTypeShortestPath();
 	void initTrainNet();
 	void getAllCHbyDP();
 	void runRounds(int num);

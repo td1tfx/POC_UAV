@@ -6,6 +6,9 @@ class User :
 private:
 	int m_userID;
 	float m_transRange = 30;
+	float m_interestTime = 1;
+	d_matrix* m_routingMatrix;
+	d_matrix* m_shortRouting;
 
 public:
 	User();

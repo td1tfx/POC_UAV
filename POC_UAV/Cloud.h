@@ -5,6 +5,8 @@ class Cloud :
 {
 private:
 	float m_transRange = 80;
+	d_matrix* m_routingMatrix;
+	d_matrix* m_shortRouting;
 
 public:
 	Cloud();
