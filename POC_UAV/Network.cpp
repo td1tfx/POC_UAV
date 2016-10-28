@@ -92,14 +92,14 @@ int Network::__initCloudletFrame() {
 	}
 	int t_offset = m_nodes.size();
 	int t_userID = 0;
-	for (int i = 0; i < Config::getInstance()->getMaxRow()*5; i++) {
-		for (int j = 0; j < Config::getInstance()->getMaxColumn()*5; j++) {
+	for (int i = 0; i < Config::getInstance()->getMaxRow()*4; i++) {
+		for (int j = 0; j < Config::getInstance()->getMaxColumn()*4; j++) {
 			t_userID++;
 			User* t_user = new User();
-			t_user->setId(t_offset + i * Config::getInstance()->getMaxColumn()*5 + j);
+			t_user->setId(t_offset + i * Config::getInstance()->getMaxColumn()*4 + j);
 			t_user->getUserID() = t_userID;
 			t_user->setPos(i * 10, j * 10, 0);
-			t_user->getGWNum() = i * Config::getInstance()->getMaxColumn() + j;
+			t_user->getGWNum() = i * Config::getInstance()->getMaxColumn() + j/4;
 			t_user->initialPackage();
 			m_nodes.push_back(t_user);
 			m_users.push_back(t_user);
@@ -446,6 +446,7 @@ void Network::__createCloudletGraph() {
 		for (i = m_users.begin(); i != m_users.end(); i++) {
 			if ((*i)->getDistance(**j) <= (*i)->getTransRange() && (*i)->getDistance(**j) <= (*j)->getTransRange()) {
 				int m = (*i)->getId();
+				(*i)->getGWNum() = n;
 				(*i)->getLinkNum()++;
 				(*j)->getLinkNum()++;
 				string iFirst = toString((*i)->getUserID());
@@ -472,6 +473,7 @@ void Network::__createCloudletGraph() {
 		if ((*i_user)->getDistance(*m_cloud) <= (*i_user)->getTransRange() && (*i_user)->getDistance(*m_cloud) <= m_cloud->getTransRange()) {
 			int m = (*i_user)->getId();
 			int n = m_cloud->getId();
+			(*i_user)->getGWNum() = n;
 			(*i_user)->getLinkNum()++;
 			m_cloud->getLinkNum()++;
 			string iFirst = toString((*i_user)->getUserID());
@@ -740,7 +742,7 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 						num++;
 					}
 					// print the path vector
-					//cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
+					cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
 					// 				print the routing vector
 					// 				for (int j = 0; j < m_nodes->size(); j++) {
 					// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
