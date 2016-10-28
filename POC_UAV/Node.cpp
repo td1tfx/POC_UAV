@@ -23,6 +23,7 @@ Node::Node()
 	m_routingMatrix->initData(0);
 	m_shortRouting->initData(-1);
 	m_inData = nullptr;
+	p_type = type_node;
 	int nnum = 3;
 	m_netQ = new NeuralNet[nnum];
 	__init();
@@ -330,7 +331,7 @@ void Node::generatePaPerRound() {
 void Node::generatePackage() {
 	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
 	Package *m_package = new Package(pid, m_nodeTime);
-	int dest = m_id;
+	int dest = m_GWNum;
 // 	while (dest == m_id) {
 // 		dest = m_outerNodes.at(rand() % m_outerNodes.size())->getId();
 // 	}
@@ -342,6 +343,21 @@ void Node::generatePackage() {
 // 	for (int i = 0; i < size; i++) {
 // 		m_package->getPathData(i) = m_trainRouting->getData(dest, i);
 // 	}
+	m_qServe.push(m_package);
+	m_packageCount++;
+}
+
+void Node::generatePackage(int dest, float nodeTime) {	
+	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
+	Package *m_package = new Package(pid, m_nodeTime);
+	m_package->setSource(m_id);
+	m_package->setDestination(dest);
+	if (nodeTime == -1) {
+		m_package->setGenerateTime(m_nodeTime);
+	}
+	else {
+		m_package->setGenerateTime(nodeTime);
+	}
 	m_qServe.push(m_package);
 	m_packageCount++;
 }
@@ -598,7 +614,7 @@ Package* Node::outPackage() {
 	return out_package;
 }
 
-void Node::inPackage(Package* in_package) {
+void Node::inPackage(Package* in_package, int recType) {
 	in_package->getHop()++;
 	if (in_package->getDestination() == m_id) {
 		if (in_package->getGenerateTime() == m_nodeTime) {	//this is to avoid the same round
@@ -606,7 +622,6 @@ void Node::inPackage(Package* in_package) {
 		}
 		if (in_package->isSignaling()) {
 			if (in_package->getHop() > 3) {
-
 			}
 			else {
 				vector<Node*>::iterator iter;
@@ -626,12 +641,39 @@ void Node::inPackage(Package* in_package) {
 // 			qSFinished->push(in_package);
 		}
 		else {
-			in_package->setTerminalTime(m_nodeTime);
-			m_qFinished.push(in_package);
+			if (this->p_type == type_UAV) {
+				if (recType == 1) {
+					in_package->setDestination(m_GWNum);
+					m_qServe.push(in_package);
+				}
+				else {
+					generatePackage(in_package->getSource(), in_package->getGenerateTime());
+					in_package->setTerminalTime(m_nodeTime);
+					m_qFinished.push(in_package);
+				}
+			
+			}
+			else if (this->p_type == type_cloud) {
+				generatePackage(in_package->getSource(),in_package->getGenerateTime());
+				in_package->setTerminalTime(m_nodeTime);
+				m_qFinished.push(in_package);
+			}
+			else {
+				in_package->setTerminalTime(m_nodeTime);
+				m_qFinished.push(in_package);
+			}
 		}
 	}
 	else {
-		m_qServe.push(in_package);
+		if (this->p_type == type_UAV) {
+			m_qServe.push(in_package);
+		}
+		else if (this->p_type == type_cloud) {
+			m_qServe.push(in_package);
+		}
+		else {
+			m_qServe.push(in_package);
+		}
 	}
 }
 
@@ -642,6 +684,85 @@ void Node::initCHMatrix() {
 void Node::initMatrix() {
 	__initIMatrix();
 	__initOCMatrix();
+}
+
+void Node::calculateDelay(bool isTrained)
+{
+	char dir[20];
+	char delayFilename[50];
+	m_pacNum = 0;
+	allDelay = 0;
+	allOnehopDelay = 0;
+	if (isTrained) {
+		sprintf(delayFilename, "%s%d%s", "../TrainedDelay/delayOfDestination", m_id, ".txt");
+		sprintf(dir, "%s", "../TrainedDelay");
+		if (_access(dir, 0) == -1) {
+			_mkdir(dir);
+		}
+	}
+	else {
+		sprintf(delayFilename, "%s%d%s", "../OSPFDelay/delayOfDestination", m_id, ".txt");
+		sprintf(dir, "%s", "../OSPFDelay");
+		if (_access(dir, 0) == -1) {
+			_mkdir(dir);
+		}
+	}
+	FILE *fout = stdout;
+	if (delayFilename)
+		fout = fopen(delayFilename, "w+t");
+	fprintf(fout, "---------------------------------------\n");
+
+	//routingMatrix->memcpyDataOut(outData, t_outputCount * sizeof(outData));
+	fprintf(fout, "id");
+	fprintf(fout, "\t");
+	fprintf(fout, "initNode");
+	fprintf(fout, "\t");
+	fprintf(fout, "hop");
+	fprintf(fout, "\t");
+	fprintf(fout, "generateTime");
+	fprintf(fout, "\t");
+	fprintf(fout, "totalDeley");
+	fprintf(fout, "\t");
+	fprintf(fout, "oneHopDeley");
+	fprintf(fout, "\n");
+
+	Package* pac;
+	while (!m_qFinished.empty())
+	{
+		pac = m_qFinished.front();
+		m_pacNum++;
+		allDelay = allDelay + pac->getDelay();
+		float t_oneDelay = pac->getDelay() / pac->getHop();
+		allOnehopDelay = allOnehopDelay + t_oneDelay;
+		int t_nodeNum = floor(pac->getId() / Config::getInstance()->gerMaxPacNumPerNode());
+		fprintf(fout, "%d", pac->getId());
+		fprintf(fout, "\t");
+		fprintf(fout, "%d", t_nodeNum);
+		fprintf(fout, "\t");
+		fprintf(fout, "%d", pac->getHop());
+		fprintf(fout, "\t");
+		fprintf(fout, "%d", pac->getGenerateTime());
+		fprintf(fout, "\t");
+		fprintf(fout, "%1.2f", pac->getDelay());
+		fprintf(fout, "\t");
+		fprintf(fout, "%1.2f", t_oneDelay);
+		fprintf(fout, "\n");
+		m_qFinished.pop();
+	}
+	pac = nullptr;
+	float averageDelay = allDelay / m_pacNum;
+	float averageOnehopDelay = allOnehopDelay / m_pacNum;
+	fprintf(fout, "total package number:");
+	fprintf(fout, "%d", m_pacNum);
+	fprintf(fout, "\n");
+	fprintf(fout, "average delay:");
+	fprintf(fout, "%1.2f", averageDelay);
+	fprintf(fout, "\n");
+	fprintf(fout, "average one-hop delay:");
+	fprintf(fout, "%1.2f", averageOnehopDelay);
+	fprintf(fout, "\n");
+	if (delayFilename)
+		fclose(fout);
 }
 
 void Node::initNerualNet() {

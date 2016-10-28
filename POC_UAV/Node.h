@@ -53,6 +53,9 @@ private:
 	int m_GWHop;
 	int m_random;
 	int m_sigCount;
+	int m_pacNum = 0;
+	float allDelay = 0;
+	float allOnehopDelay = 0;
 	float m_nodeTime;
 	float m_packageRate;
 	float m_x, m_y, m_z;
@@ -101,6 +104,14 @@ private:
 	int __chooseRadio(Node n);
 	int __chooseRadioNormal(Node n);
 
+protected:
+	enum type {
+		type_node = 0,
+		type_UAV = 1,
+		type_user = 2,
+		type_cloud = 3,
+		type_cloudlet = 4
+	}p_type;
 
 public:
 	
@@ -126,6 +137,7 @@ public:
 	int getRandom() { return m_random; }
 	int getPackageNum() { return m_qServe.size();}
 	int getNextNode(int dest) {	return m_shortRouting->getData(dest, 0); }
+	int getFinalPacNum() { return m_pacNum;	}
 	bool& getIsGW() { return m_isGW; }
 	bool& isOuterNode() { return m_isOuterNode; }
 	bool isQueueEmpty() { return m_qServe.empty(); }
@@ -135,6 +147,8 @@ public:
 	float& getPackageRate() { return m_packageRate; }
 	float& getNodeTime() { return m_nodeTime; }
 	float& getEnergy() { return m_energy; }
+	float getAllDelay() { return allDelay; }
+	float getAllOnehopDelay() {	return allOnehopDelay; }
 	virtual float& getTransRange() { return m_transRange; }
 	float getPerTransDelay() { return m_perTransDelay; }
 	float getPerTransSignalDelay() { return m_perTransSignalDelay; }
@@ -166,15 +180,17 @@ public:
 	void channelAssignment();
 	void channelAssignmentNormal();
 	void generatePackage();
+	void generatePackage(int dest, float nodeTime = -1);
 	void generatePaPerRound();
 	void channelAssignmentCopy(int ch);
 	void saveNodeData(int inDataSize, bool clean);
 	void initNerualNet();
 	void CHMatrixTransferBack();
-	void inPackage(Package* in_package);
+	void inPackage(Package* in_package,int recType = 0); //type: 0, cloudlet, 1, cloud 
 	void initCHMatrix();
 	void initMatrix();
 	void initialPackage();
+	void calculateDelay(bool isTrained = false);
 	Package* outPackage();
 
 

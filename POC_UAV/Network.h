@@ -43,6 +43,7 @@ private:
 	void __updatePribyLinkNum();
 	void __getNodesLoad();
 	bool __getShortestPath(int destId, int type = 0);
+	void __runOneRound();
 
 public:
 
@@ -51,6 +52,9 @@ public:
 	int iterTimes;
 	Network();
 	~Network();
+
+	float getCuTime() { return m_cuTime; }
+
 	void runPOC(int num);
 	void runNormal();
 	float runPOCGame(int num, bool isSave = true);
@@ -69,7 +73,9 @@ public:
 	void runOneRound();
 	void updatePribyLoad();
 	void updatePribyRandom();
+	void saveDelay(bool isTrained = false, double genarateRate = 1);
 	int trainNet();
+
 
 
 	string toString(int a);

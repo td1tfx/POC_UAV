@@ -1003,6 +1003,141 @@ void Network::runOneRound() {
 	m_cuTime = t_minTime;
 }
 
+void Network::__runOneRound() {
+	float t_minTime = 9999999999;
+	//users
+	vector<User*>::iterator i_user;
+	for (i_user = m_users.begin(); i_user != m_users.end(); i_user++) {
+		if ((*i_user)->getNodeTime() > m_cuTime) {
+			continue;
+		}
+		(*i_user)->generatePaPerRound();
+
+		if (!(*i_user)->isQueueEmpty()) {
+			Package* t_package = (*i_user)->outPackage();
+			int t_dest = t_package->getDestination();
+			int t_nextNodeId = (*i_user)->getNextNode(t_dest);
+			Node* j = m_nodes.at(t_nextNodeId);
+			j->inPackage(t_package);
+			//float t_sigtime = (*i)->getPerTransSignalDelay();
+			//float t_ptime = (*i)->getPerTransDelay();
+			if (t_package->isSignaling()) {
+				(*i_user)->getNodeTime() += (*i_user)->getPerTransSignalDelay();
+			}
+			else {
+				(*i_user)->getNodeTime() += (*i_user)->getPerTransDelay();
+			}
+		}
+		else {
+			(*i_user)->getNodeTime() += (*i_user)->getPerTransDelay();
+		}
+		if (t_minTime >= (*i_user)->getNodeTime()) {
+			t_minTime = (*i_user)->getNodeTime();
+		}
+	}
+	//UAVs
+	vector<UAV*>::iterator i_UAV;
+	for (i_UAV = m_UAVs.begin(); i_UAV != m_UAVs.end(); i_UAV++) {
+		if ((*i_UAV)->getNodeTime() > m_cuTime) {
+			continue;
+		}
+		if (!(*i_UAV)->isQueueEmpty()) {
+			Package* t_package = (*i_UAV)->outPackage();
+			int t_dest = t_package->getDestination();
+			int t_nextNodeId = (*i_UAV)->getNextNode(t_dest);
+			Node* j = m_nodes.at(t_nextNodeId);
+			j->inPackage(t_package);
+			//float t_sigtime = (*i)->getPerTransSignalDelay();
+			//float t_ptime = (*i)->getPerTransDelay();
+			if (t_package->isSignaling()) {
+				(*i_UAV)->getNodeTime() += (*i_UAV)->getPerTransSignalDelay();
+			}
+			else {
+				(*i_UAV)->getNodeTime() += (*i_UAV)->getPerTransDelay();
+			}
+		}
+		else {
+			(*i_UAV)->getNodeTime() += (*i_UAV)->getPerTransDelay();
+		}
+		if (t_minTime >= (*i_UAV)->getNodeTime()) {
+			t_minTime = (*i_UAV)->getNodeTime();
+		}
+	}
+	//cloud
+		if (m_cloud->getNodeTime() > m_cuTime) {
+			return;
+		}
+		if (!m_cloud->isQueueEmpty()) {
+			Package* t_package = m_cloud->outPackage();
+			int t_dest = t_package->getDestination();
+			int t_nextNodeId = m_cloud->getNextNode(t_dest);
+			Node* j = m_nodes.at(t_nextNodeId);
+			j->inPackage(t_package);
+			//float t_sigtime = (*i)->getPerTransSignalDelay();
+			//float t_ptime = (*i)->getPerTransDelay();
+			if (t_package->isSignaling()) {
+				m_cloud->getNodeTime() += m_cloud->getPerTransSignalDelay();
+			}
+			else {
+				m_cloud->getNodeTime() += m_cloud->getPerTransDelay();
+			}
+		}
+		else {
+			m_cloud->getNodeTime() += m_cloud->getPerTransDelay();
+		}
+		if (t_minTime >= m_cloud->getNodeTime()) {
+			t_minTime = m_cloud->getNodeTime();
+		}
+
+	m_cuTime = t_minTime;
+};
+
+void Network::saveDelay(bool isTrained, double genarateRate) {
+	char* DelayFile = "totalDelay.txt";
+	FILE *fout = stdout;
+	int totalPacNum = 0;
+	int totalSpacNum = 0;
+	float totalDelay = 0;
+	float totalOnehopDelay = 0;
+	vector<User*>::iterator i;
+	for (i = m_users.begin(); i != m_users.end(); i++) {
+		(*i)->calculateDelay(isTrained);
+		totalPacNum += (*i)->getFinalPacNum();
+		totalDelay += (*i)->getAllDelay();
+		totalOnehopDelay += (*i)->getAllOnehopDelay();
+		//totalSpacNum += (*i)->getFinalSPacNum();
+	}
+	float averageDelay = totalDelay / totalPacNum;
+	float averageOnehopDelay = totalOnehopDelay / totalPacNum;
+	float throughputPerSecend = totalPacNum / m_cuTime;
+	if (DelayFile) {
+		fout = fopen(DelayFile, "a+t");
+		fprintf(fout, "ganerateRate = ");
+		fprintf(fout, "%1.2f", genarateRate);
+		fprintf(fout, "\n");
+		fprintf(fout, "averageDelay = ");
+		fprintf(fout, "%1.5f", averageDelay);
+		fprintf(fout, "\n");
+		fprintf(fout, "averageOnehopDelay = ");
+		fprintf(fout, "%1.5f", averageOnehopDelay);
+		fprintf(fout, "\n");
+		fprintf(fout, "throughputPerSecend = ");
+		fprintf(fout, "%1.5f", throughputPerSecend);
+		fprintf(fout, "\n");
+		fprintf(fout, "totalSignalPacNum = ");
+		fprintf(fout, "%d", totalSpacNum);
+		fprintf(fout, "\n");
+	}
+
+	cout << "ganerateRate = " << genarateRate << endl;
+	cout << "averageDelay = " << averageDelay << endl;
+	cout << "averageOnehopDelay = " << averageOnehopDelay << endl;
+	cout << "throughputPerSecend = " << throughputPerSecend << endl;
+	cout << "totalSignalPacNum = " << totalSpacNum << endl;
+
+}
+
+
 string Network::toString(int a)
 {
 	char jF[32];
