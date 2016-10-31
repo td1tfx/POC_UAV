@@ -19,12 +19,12 @@ void doRecommendation() {
 	net->initCloudletGraph();
 	net->getAllTypeShortestPath();
 	int maxRound = Config::getInstance()->getRound();
-	net->runRounds(1);
+	net->runCloudRounds(100);
 // 	while (net->getCuTime() < 10) {
 // 		net->runRounds(100);
 // 		//topology->saveData(false, filename, dest);
 // 	}
-	net->saveDelay(false);
+	net->saveDelay(true);
 }
 
 

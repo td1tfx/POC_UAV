@@ -43,7 +43,9 @@ private:
 	void __updatePribyLinkNum();
 	void __getNodesLoad();
 	bool __getShortestPath(int destId, int type = 0);
+	bool __getShortestPath(Node* t_node, int type = 0);
 	void __runOneRound();
+	void __runOneCloudRound();
 
 public:
 
@@ -70,7 +72,7 @@ public:
 	void initTrainNet();
 	void getAllCHbyDP();
 	void runRounds(int num);
-	void runOneRound();
+	void runCloudRounds(int num);
 	void updatePribyLoad();
 	void updatePribyRandom();
 	void saveDelay(bool isTrained = false, double genarateRate = 1);

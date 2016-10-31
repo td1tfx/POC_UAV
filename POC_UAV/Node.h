@@ -63,6 +63,7 @@ private:
 	float m_perTransSignalDelay;
 	float m_energy;
 	float m_transRange = 70;
+	float m_shortestDistance = 999999999;
 	d_matrix* m_IMatrix;
 	d_matrix* m_IMatrix_copy;
 	d_matrix* m_OCMatrix;
@@ -147,6 +148,7 @@ public:
 	float& getPackageRate() { return m_packageRate; }
 	float& getNodeTime() { return m_nodeTime; }
 	float& getEnergy() { return m_energy; }
+	float& getShortestDistance() { return m_shortestDistance; }
 	float getAllDelay() { return allDelay; }
 	float getAllOnehopDelay() {	return allOnehopDelay; }
 	virtual float& getTransRange() { return m_transRange; }

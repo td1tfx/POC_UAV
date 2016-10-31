@@ -55,7 +55,7 @@ int Network::__initCloudletFrame() {
 	m_cloud->setId(0);
 	m_cloud->setPos(0, 0, 0);
 	m_cloud->getIsGW() = true;
-	m_cloud->initialPackage();
+	//m_cloud->initialPackage();
 	m_nodes.push_back(m_cloud);
 	int t_cloudletID = 0;
 	int t_UAVID = 0;
@@ -72,7 +72,7 @@ int Network::__initCloudletFrame() {
 				t_UAV->getUAVID() = t_UAVID;
 				t_UAV->setPos(i * 50, j * 50, 0);
 				t_UAV->getGWNum() = 0;
-				t_UAV->initialPackage();
+				//t_UAV->initialPackage();
 				m_nodes.push_back(t_UAV);
 				m_UAVs.push_back(t_UAV);
 			}
@@ -83,7 +83,7 @@ int Network::__initCloudletFrame() {
 				t_Cl->getCloudletID() = t_cloudletID;
 				t_Cl->setPos(i * 50, j * 50, 0);
 				t_Cl->getGWNum() = 0;
-				t_Cl->initialPackage();
+				//t_Cl->initialPackage();
 				m_nodes.push_back(t_Cl);
 				m_UAVs.push_back(t_Cl);
 				m_cloudlets.push_back(t_Cl);
@@ -100,7 +100,7 @@ int Network::__initCloudletFrame() {
 			t_user->getUserID() = t_userID;
 			t_user->setPos(i * 10, j * 10, 0);
 			t_user->getGWNum() = i * Config::getInstance()->getMaxColumn() + j/4;
-			t_user->initialPackage();
+			//t_user->initialPackage();
 			m_nodes.push_back(t_user);
 			m_users.push_back(t_user);
 		}
@@ -445,6 +445,10 @@ void Network::__createCloudletGraph() {
 		int n = (*j)->getId();
 		for (i = m_users.begin(); i != m_users.end(); i++) {
 			if ((*i)->getDistance(**j) <= (*i)->getTransRange() && (*i)->getDistance(**j) <= (*j)->getTransRange()) {
+				if ((*i)->getDistance(**j) > (*i)->getShortestDistance()) {
+					continue;
+				}
+				(*i)->getShortestDistance() = (*i)->getDistance(**j);
 				int m = (*i)->getId();
 				(*i)->getGWNum() = n;
 				(*i)->getLinkNum()++;
@@ -471,6 +475,10 @@ void Network::__createCloudletGraph() {
 	vector<User*>::iterator i_user;
 	for (i_user = m_users.begin(); i_user != m_users.end(); i_user++) {
 		if ((*i_user)->getDistance(*m_cloud) <= (*i_user)->getTransRange() && (*i_user)->getDistance(*m_cloud) <= m_cloud->getTransRange()) {
+			if ((*i_user)->getDistance(*m_cloud) > (*i_user)->getShortestDistance()) {
+				continue;
+			}
+			(*i_user)->getShortestDistance() = (*i_user)->getDistance(*m_cloud);
 			int m = (*i_user)->getId();
 			int n = m_cloud->getId();
 			(*i_user)->getGWNum() = n;
@@ -499,6 +507,10 @@ void Network::__createCloudletGraph() {
 		vector<UAV*>::iterator j_uav;
 		for (j_uav = m_UAVs.begin(); j_uav != m_UAVs.end(); j_uav++) {
 			if ((*i_uav)->getDistance(**j_uav) <= (*i_uav)->getTransRange() && (*i_uav)->getDistance(**j_uav) <= (*j_uav)->getTransRange()) {
+				if ((*i_uav)->getDistance(**j_uav) > (*i_uav)->getShortestDistance()) {
+					continue;
+				}
+				(*i_uav)->getShortestDistance() = (*i_uav)->getDistance(**j_uav);
 				int m = (*i_uav)->getId();
 				int n = (*j_uav)->getId();
 				(*i_uav)->getLinkNum()++;
@@ -526,6 +538,10 @@ void Network::__createCloudletGraph() {
 	vector<UAV*>::iterator j_uav;
 	for (j_uav = m_UAVs.begin(); j_uav != m_UAVs.end(); j_uav++) {
 		if ((m_cloud)->getDistance(**j_uav) <= (m_cloud)->getTransRange() && (m_cloud)->getDistance(**j_uav) <= (*j_uav)->getTransRange()) {
+			if ((m_cloud)->getDistance(**j_uav) > (m_cloud)->getShortestDistance()) {
+				continue;
+			}
+			(m_cloud)->getShortestDistance() = (m_cloud)->getDistance(**j_uav);
 			int m = m_cloud->getId();
 			int n = (*j_uav)->getId();
 			m_cloud->getLinkNum()++;
@@ -639,7 +655,7 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 		get(boost::vertex_index, *m_dGraph))).distance_map(boost::make_iterator_property_map(distMap.begin(), get(boost::vertex_index, *m_dGraph))));
 
 	float sum = 0;
-	if (type == 0) {
+	if (type == 0) {//node
 		vector<Node*>::iterator i;
 		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 			if ((*i)->getId() == destId) {
@@ -676,7 +692,7 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 			}
 		}
 	}
-	else if (type == 1) {
+	else if (type == 1) {//UAV
 		vector<UAV*>::iterator i;
 		for (i = m_UAVs.begin(); i != m_UAVs.end(); i++) {
 			if ((*i)->getId() == destId) {
@@ -713,7 +729,7 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 			}
 		}
 	}
-	else if (type == 2) {
+	else if (type == 2) {//user
 		vector<User*>::iterator i;
 		for (i = m_users.begin(); i != m_users.end(); i++) {
 			if ((*i)->getId() == destId) {
@@ -752,7 +768,158 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 			}
 		}
 	}
-	else if (type == 3) {
+	else if (type == 3) {//cloud
+		int test1 = m_cloud->getId();
+		if (distMap.at(m_cloud->getId()) == NULL) {
+			cout << "error!! Node=" << m_cloud->getId() << "distMap = NULL, packageNum =" << m_cloud->getPackageNum() << endl;
+			return false;
+		}
+		else {
+			vector<int>* path = new vector<int>;
+			int p = m_cloud->getId();
+			m_cloud->getRoutingMatrix()->getData(destId, p) = 1;
+			int mmm = m_cloud->getGWHop() = distMap.at(p);
+			string linkId = toString(p);
+			string routingId = "";
+			int num = 0;
+			while (p != destId) {
+				p = parent.at(p);
+				m_cloud->getRoutingMatrix()->getData(destId, p) = 1;
+				m_cloud->getShortPath()->getData(destId, num) = p;
+				linkId = linkId + "->" + toString(p);
+				num++;
+			}
+			// print the path vector
+			cout << "node=" << m_cloud->getId() << ";dest=" << destId << ";dist=" << distMap[m_cloud->getId()] << ";path=" << linkId << endl;
+			// 				print the routing vector
+			// 				for (int j = 0; j < m_nodes->size(); j++) {
+			// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+			// 				}
+			// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
+		}
+	}
+	return true;
+}
+
+bool Network::__getShortestPath(Node* t_node, int type) { // type: 0,node; 1,UAV; 2,user; 3,cloud
+
+	int destId = t_node->getGWNum();
+	DVertex s = vertex(destId, *m_dGraph);
+	std::vector<DVertex> parent(num_vertices(*m_dGraph));
+	std::vector<int> distMap(num_vertices(*m_dGraph));
+	weight_map(boost::make_iterator_property_map(distMap.begin(), get(boost::vertex_index, *m_dGraph)));
+	dijkstra_shortest_paths(*m_dGraph, s, predecessor_map(boost::make_iterator_property_map(parent.begin(),
+		get(boost::vertex_index, *m_dGraph))).distance_map(boost::make_iterator_property_map(distMap.begin(), get(boost::vertex_index, *m_dGraph))));
+
+	float sum = 0;
+	if (type == 0) {//node
+		vector<Node*>::iterator i;
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			if ((*i)->getId() == destId) {
+			}
+			else {
+				int test1 = (*i)->getId();
+				if (distMap.at((*i)->getId()) == NULL) {
+					cout << "error!! Node=" << (*i)->getId() << "distMap = NULL, packageNum =" << (*i)->getPackageNum() << endl;
+					return false;
+				}
+				else {
+					vector<int>* path = new vector<int>;
+					int p = (*i)->getId();
+					(*i)->getRoutingMatrix()->getData(destId, p) = 1;
+					int mmm = (*i)->getGWHop() = distMap.at(p);
+					string linkId = toString(p);
+					string routingId = "";
+					int num = 0;
+					while (p != destId) {
+						p = parent.at(p);
+						(*i)->getRoutingMatrix()->getData(destId, p) = 1;
+						(*i)->getShortPath()->getData(destId, num) = p;
+						linkId = linkId + "->" + toString(p);
+						num++;
+					}
+					// print the path vector
+					//cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
+					// 				print the routing vector
+					// 				for (int j = 0; j < m_nodes->size(); j++) {
+					// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+					// 				}
+					// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
+				}
+			}
+		}
+	}
+	else if (type == 1) {//UAV
+		vector<UAV*>::iterator i;
+		for (i = m_UAVs.begin(); i != m_UAVs.end(); i++) {
+			if ((*i)->getId() == destId) {
+			}
+			else {
+				int test1 = (*i)->getId();
+				if (distMap.at((*i)->getId()) == NULL) {
+					cout << "error!! Node=" << (*i)->getId() << "distMap = NULL, packageNum =" << (*i)->getPackageNum() << endl;
+					return false;
+				}
+				else {
+					vector<int>* path = new vector<int>;
+					int p = (*i)->getId();
+					(*i)->getRoutingMatrix()->getData(destId, p) = 1;
+					int mmm = (*i)->getGWHop() = distMap.at(p);
+					string linkId = toString(p);
+					string routingId = "";
+					int num = 0;
+					while (p != destId) {
+						p = parent.at(p);
+						(*i)->getRoutingMatrix()->getData(destId, p) = 1;
+						(*i)->getShortPath()->getData(destId, num) = p;
+						linkId = linkId + "->" + toString(p);
+						num++;
+					}
+					// print the path vector
+					cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
+					// 				print the routing vector
+					// 				for (int j = 0; j < m_nodes->size(); j++) {
+					// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+					// 				}
+					// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
+				}
+			}
+		}
+	}
+	else if (type == 2) {//user
+		//vector<User*>::iterator i;
+		//for (i = m_users.begin(); i != m_users.end(); i++) {
+				int test1 = t_node->getId();
+				if (distMap.at(t_node->getId()) == NULL) {
+					cout << "error!! Node=" << t_node->getId() << "distMap = NULL, packageNum =" << t_node->getPackageNum() << endl;
+					return false;
+				}
+				else {
+					vector<int>* path = new vector<int>;
+					int p = t_node->getId();
+					t_node->getRoutingMatrix()->getData(destId, p) = 1;
+					int mmm = t_node->getGWHop() = distMap.at(p);
+					string linkId = toString(p);
+					string routingId = "";
+					int num = 0;
+					while (p != destId) {
+						p = parent.at(p);
+						t_node->getRoutingMatrix()->getData(destId, p) = 1;
+						t_node->getShortPath()->getData(destId, num) = p;
+						linkId = linkId + "->" + toString(p);
+						num++;
+					}
+					// print the path vector
+					cout << "node=" << t_node->getId() << ";dest=" << destId << ";dist=" << distMap[t_node->getId()] << ";path=" << linkId << endl;
+					// 				print the routing vector
+					// 				for (int j = 0; j < m_nodes->size(); j++) {
+					// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+					// 				}
+					// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
+				}
+
+	}
+	else if (type == 3) {//cloud
 		int test1 = m_cloud->getId();
 		if (distMap.at(m_cloud->getId()) == NULL) {
 			cout << "error!! Node=" << m_cloud->getId() << "distMap = NULL, packageNum =" << m_cloud->getPackageNum() << endl;
@@ -808,7 +975,7 @@ void Network::getAllTypeShortestPath() {
 	m_cloud->getShortPath()->initData(-1);
  	vector<UAV*>::iterator i;
 	for (i = m_UAVs.begin(); i != m_UAVs.end(); i++) {
-		if (__getShortestPath((*i)->getId(), 3)) {
+		if (__getShortestPath(*i, 3)) {
 			//cout << "finished destination:" << (*i)->getId() << endl;
 		}
 	}
@@ -818,7 +985,7 @@ void Network::getAllTypeShortestPath() {
 		(*i)->getShortPath()->initData(-1);
 	}
 	for (i = m_UAVs.begin(); i != m_UAVs.end(); i++) {
-		if (__getShortestPath((*i)->getId(), 1)) {
+		if (__getShortestPath(*i, 1)) {
 			//cout << "finished destination:" << (*i)->getId() << endl;
 		}
 	}
@@ -833,7 +1000,7 @@ void Network::getAllTypeShortestPath() {
 		(*i_user)->getShortPath()->initData(-1);
 	}
 	for (i_user = m_users.begin(); i_user != m_users.end(); i_user++) {
-		if (__getShortestPath((*i_user)->getGWNum(), 2)) {
+		if (__getShortestPath(*i_user, 2)) {
 			cout << "finished destination:" << (*i_user)->getId() << endl;
 		}
 	}
@@ -963,12 +1130,19 @@ void Network::getAllCHbyDP() {
 
 void Network::runRounds(int num) {
 	for (int i = 0; i < num; i++) {
-		runOneRound();
+		__runOneRound();
 	}
 	//cout << "run round:" << num << " finisid!" << endl;
 }
 
-void Network::runOneRound() {
+void Network::runCloudRounds(int num) {
+	for (int i = 0; i < num; i++) {
+		__runOneCloudRound();
+	}
+	//cout << "run round:" << num << " finisid!" << endl;
+}
+
+void Network::__runOneRound() {
 	vector<Node*>::iterator i;
 	float t_minTime = 9999999999;
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
@@ -1003,7 +1177,7 @@ void Network::runOneRound() {
 	m_cuTime = t_minTime;
 }
 
-void Network::__runOneRound() {
+void Network::__runOneCloudRound() {
 	float t_minTime = 9999999999;
 	//users
 	vector<User*>::iterator i_user;
