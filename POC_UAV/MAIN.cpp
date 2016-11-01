@@ -21,10 +21,10 @@ void doRecommendation() {
 	int maxRound = Config::getInstance()->getRound();
 	net->runCloudRounds(100);
 	while (net->getCuTime() < 100) {
-		net->runRounds(100);
+		net->runCloudRounds(100);
 		//topology->saveData(false, filename, dest);
 	}
-	net->saveDelay(true);
+	net->saveDelay(true,Config::getInstance()->getMaxGenerateRate());
 }
 
 
