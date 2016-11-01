@@ -297,22 +297,21 @@ void Node::initialPackage() {
 		m_isOuterNode = false;
 		//paGenerateRate = 0;
 	}
-	if (m_id==4) {
-		generatePackage();
-		generatePackage();
-		generatePackage();
-		generatePackage();
-	}else if(m_id == 3) {
-		generatePackage();
-		generatePackage();
-		generatePackage();
-	}else if (m_id == 2) {
-		generatePackage();
-		generatePackage();
-	}else{
-		generatePackage();
-	}
-
+// 	if (m_id==4) {
+// 		generatePackage();
+// 		generatePackage();
+// 		generatePackage();
+// 		generatePackage();
+// 	}else if(m_id == 3) {
+// 		generatePackage();
+// 		generatePackage();
+// 		generatePackage();
+// 	}else if (m_id == 2) {
+// 		generatePackage();
+// 		generatePackage();
+// 	}else{
+// 		generatePackage();
+// 	}
 }
 
 void Node::generatePaPerRound() {
@@ -651,7 +650,6 @@ void Node::inPackage(Package* in_package, int recType) {
 					in_package->setTerminalTime(m_nodeTime);
 					m_qFinished.push(in_package);
 				}
-			
 			}
 			else if (this->p_type == type_cloud) {
 				generatePackage(in_package->getSource(),in_package->getGenerateTime());

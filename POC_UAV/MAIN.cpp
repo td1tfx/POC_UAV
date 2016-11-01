@@ -20,10 +20,10 @@ void doRecommendation() {
 	net->getAllTypeShortestPath();
 	int maxRound = Config::getInstance()->getRound();
 	net->runCloudRounds(100);
-// 	while (net->getCuTime() < 10) {
-// 		net->runRounds(100);
-// 		//topology->saveData(false, filename, dest);
-// 	}
+	while (net->getCuTime() < 100) {
+		net->runRounds(100);
+		//topology->saveData(false, filename, dest);
+	}
 	net->saveDelay(true);
 }
 

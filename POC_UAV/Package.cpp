@@ -14,6 +14,7 @@ Package::Package(int id, float time)
 	m_terminalTime = 0;
 	m_delay = 0;	
 	m_hop = 0;
+	m_signaling = false;
 }
 
 

@@ -55,7 +55,7 @@ int Network::__initCloudletFrame() {
 	m_cloud->setId(0);
 	m_cloud->setPos(0, 0, 0);
 	m_cloud->getIsGW() = true;
-	//m_cloud->initialPackage();
+	m_cloud->initialPackage();
 	m_nodes.push_back(m_cloud);
 	int t_cloudletID = 0;
 	int t_UAVID = 0;
@@ -72,7 +72,7 @@ int Network::__initCloudletFrame() {
 				t_UAV->getUAVID() = t_UAVID;
 				t_UAV->setPos(i * 50, j * 50, 0);
 				t_UAV->getGWNum() = 0;
-				//t_UAV->initialPackage();
+				t_UAV->initialPackage();
 				m_nodes.push_back(t_UAV);
 				m_UAVs.push_back(t_UAV);
 			}
@@ -83,7 +83,7 @@ int Network::__initCloudletFrame() {
 				t_Cl->getCloudletID() = t_cloudletID;
 				t_Cl->setPos(i * 50, j * 50, 0);
 				t_Cl->getGWNum() = 0;
-				//t_Cl->initialPackage();
+				t_Cl->initialPackage();
 				m_nodes.push_back(t_Cl);
 				m_UAVs.push_back(t_Cl);
 				m_cloudlets.push_back(t_Cl);
@@ -100,7 +100,7 @@ int Network::__initCloudletFrame() {
 			t_user->getUserID() = t_userID;
 			t_user->setPos(i * 10, j * 10, 0);
 			t_user->getGWNum() = i * Config::getInstance()->getMaxColumn() + j/4;
-			//t_user->initialPackage();
+			t_user->initialPackage();
 			m_nodes.push_back(t_user);
 			m_users.push_back(t_user);
 		}
@@ -719,7 +719,7 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 						num++;
 					}
 					// print the path vector
-					cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
+					//cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
 					// 				print the routing vector
 					// 				for (int j = 0; j < m_nodes->size(); j++) {
 					// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
@@ -733,8 +733,6 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 		vector<User*>::iterator i;
 		for (i = m_users.begin(); i != m_users.end(); i++) {
 			if ((*i)->getId() == destId) {
-			}
-			else if ((*i)->getGWNum() != destId) {
 			}
 			else {
 				int test1 = (*i)->getId();
@@ -758,7 +756,7 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 						num++;
 					}
 					// print the path vector
-					cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
+					//cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << linkId << endl;
 					// 				print the routing vector
 					// 				for (int j = 0; j < m_nodes->size(); j++) {
 					// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
@@ -790,7 +788,7 @@ bool Network::__getShortestPath(int destId, int type ) { // type: 0,node; 1,UAV;
 				num++;
 			}
 			// print the path vector
-			cout << "node=" << m_cloud->getId() << ";dest=" << destId << ";dist=" << distMap[m_cloud->getId()] << ";path=" << linkId << endl;
+			//cout << "node=" << m_cloud->getId() << ";dest=" << destId << ";dist=" << distMap[m_cloud->getId()] << ";path=" << linkId << endl;
 			// 				print the routing vector
 			// 				for (int j = 0; j < m_nodes->size(); j++) {
 			// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
@@ -887,38 +885,67 @@ bool Network::__getShortestPath(Node* t_node, int type) { // type: 0,node; 1,UAV
 		}
 	}
 	else if (type == 2) {//user
-		//vector<User*>::iterator i;
-		//for (i = m_users.begin(); i != m_users.end(); i++) {
-				int test1 = t_node->getId();
-				if (distMap.at(t_node->getId()) == NULL) {
-					cout << "error!! Node=" << t_node->getId() << "distMap = NULL, packageNum =" << t_node->getPackageNum() << endl;
-					return false;
-				}
-				else {
-					vector<int>* path = new vector<int>;
-					int p = t_node->getId();
-					t_node->getRoutingMatrix()->getData(destId, p) = 1;
-					int mmm = t_node->getGWHop() = distMap.at(p);
-					string linkId = toString(p);
-					string routingId = "";
-					int num = 0;
-					while (p != destId) {
-						p = parent.at(p);
-						t_node->getRoutingMatrix()->getData(destId, p) = 1;
-						t_node->getShortPath()->getData(destId, num) = p;
-						linkId = linkId + "->" + toString(p);
-						num++;
-					}
-					// print the path vector
-					cout << "node=" << t_node->getId() << ";dest=" << destId << ";dist=" << distMap[t_node->getId()] << ";path=" << linkId << endl;
-					// 				print the routing vector
-					// 				for (int j = 0; j < m_nodes->size(); j++) {
-					// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
-					// 				}
-					// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
-				}
-
-	}
+		//user->UAV
+		int test1 = t_node->getId();
+		if (distMap.at(t_node->getId()) == NULL) {
+			cout << "error!! Node=" << t_node->getId() << "distMap = NULL, packageNum =" << t_node->getPackageNum() << endl;
+			return false;
+		}
+		else {
+			vector<int>* path = new vector<int>;
+			int p = t_node->getId();
+			t_node->getRoutingMatrix()->getData(destId, p) = 1;
+			int mmm = t_node->getGWHop() = distMap.at(p);
+			string linkId = toString(p);
+			string routingId = "";
+			int num = 0;
+			while (p != destId) {
+				p = parent.at(p);
+				t_node->getRoutingMatrix()->getData(destId, p) = 1;
+				t_node->getShortPath()->getData(destId, num) = p;
+				linkId = linkId + "->" + toString(p);
+				num++;
+			}
+			// print the path vector
+			cout << "node=" << t_node->getId() << ";dest=" << destId << ";dist=" << distMap[t_node->getId()] << ";path=" << linkId << endl;
+			// 				print the routing vector
+			// 				for (int j = 0; j < m_nodes->size(); j++) {
+			// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+			// 				}
+			// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
+		}
+		//UAV->user
+// 		int t_userId = t_node->getId();
+// 		t_node = m_nodes.at(destId);
+// 		destId = t_userId;
+// 		if (distMap.at(t_node->getId()) == NULL) {
+// 			cout << "error!! Node=" << t_node->getId() << "distMap = NULL, packageNum =" << t_node->getPackageNum() << endl;
+// 			return false;
+// 		}
+// 		else {
+// 			vector<int>* path = new vector<int>;
+// 			int p = t_node->getId();
+// 			t_node->getRoutingMatrix()->getData(destId, p) = 1;
+// 			int mmm = t_node->getGWHop() = distMap.at(p);
+// 			string linkId = toString(p);
+// 			string routingId = "";
+// 			int num = 0;
+// 			while (p != destId) {
+// 				p = parent.at(p);
+// 				t_node->getRoutingMatrix()->getData(destId, p) = 1;
+// 				t_node->getShortPath()->getData(destId, num) = p;
+// 				linkId = linkId + "->" + toString(p);
+// 				num++;
+// 			}
+// 			// print the path vector
+// 			cout << "node=" << t_node->getId() << ";dest=" << destId << ";dist=" << distMap[t_node->getId()] << ";path=" << linkId << endl;
+// 			// 				print the routing vector
+// 			// 				for (int j = 0; j < m_nodes->size(); j++) {
+// 			// 				routingId = routingId + "->" + toString((*i)->getRoutingMatrix()->getData(destId, j));
+// 			// 				}
+// 			// 				cout << "node=" << (*i)->getId() << ";dest=" << destId << ";dist=" << distMap[(*i)->getId()] << ";path=" << routingId << endl;
+// 		}
+ 	}
 	else if (type == 3) {//cloud
 		int test1 = m_cloud->getId();
 		if (distMap.at(m_cloud->getId()) == NULL) {
@@ -970,42 +997,28 @@ void Network::getAllShortestPath() {
 
 void Network::getAllTypeShortestPath() {
 	__updateNeighborGraph();
-	//cloud
-	m_cloud->getRoutingMatrix()->initData(0);
-	m_cloud->getShortPath()->initData(-1);
- 	vector<UAV*>::iterator i;
-	for (i = m_UAVs.begin(); i != m_UAVs.end(); i++) {
-		if (__getShortestPath(*i, 3)) {
-			//cout << "finished destination:" << (*i)->getId() << endl;
-		}
-	}
-	//UAVs
-	for (i = m_UAVs.begin(); i != m_UAVs.end(); i++) {
+	vector<Node*>::iterator i;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		(*i)->getRoutingMatrix()->initData(0);
 		(*i)->getShortPath()->initData(-1);
 	}
-	for (i = m_UAVs.begin(); i != m_UAVs.end(); i++) {
-		if (__getShortestPath(*i, 1)) {
+	//cloud
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		if (__getShortestPath((*i)->getId(), 1)) {
 			//cout << "finished destination:" << (*i)->getId() << endl;
 		}
-	}
-	if (__getShortestPath(m_cloud->getId(), 1)) {
-		//cout << "finished destination:" << m_cloud->getId() << endl;
-	}
-	//Users
-	vector<User*>::iterator i_user;
-	for (i_user = m_users.begin(); i_user != m_users.end(); i_user++) {
-		int test = (*i_user)->getId();
-		(*i_user)->getRoutingMatrix()->initData(0);
-		(*i_user)->getShortPath()->initData(-1);
-	}
-	for (i_user = m_users.begin(); i_user != m_users.end(); i_user++) {
-		if (__getShortestPath(*i_user, 2)) {
-			cout << "finished destination:" << (*i_user)->getId() << endl;
+		if (__getShortestPath((*i)->getId(), 2)) {
+			//cout << "finished destination:" << (*i_user)->getId() << endl;
+		}
+		if (__getShortestPath((*i)->getId(), 3)) {
+			cout << "finished destination:" << (*i)->getId() << endl;
 		}
 	}
-
-	__getNodesLoad();
+// 	if (__getShortestPath(m_cloud->getId(), 1)) {
+// 		//cout << "finished destination:" << m_cloud->getId() << endl;
+// 	}
+	//Users
+	//__getNodesLoad();
 }
 
 void Network::__getNodesLoad() {
