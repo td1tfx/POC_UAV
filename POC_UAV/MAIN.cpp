@@ -3,6 +3,7 @@
 
 void doPOC();
 void doRecommendation();
+void doCloudletRecommendation();
 
 int main(int argc, char *argv[]) {
 
@@ -27,7 +28,19 @@ void doRecommendation() {
 	net->saveDelay(true,Config::getInstance()->getMaxGenerateRate());
 }
 
-
+void doCloudletRecommendation(){
+	srand(time(NULL));
+	auto net = new Network;
+	net->initCloudletGraph();
+	net->getAllTypeShortestPath();
+	int maxRound = Config::getInstance()->getRound();
+	net->runCloudletRounds(100);
+	while (net->getCuTime() < 100) {
+		net->runCloudletRounds(100);
+		//topology->saveData(false, filename, dest);
+	}
+	net->saveDelay(true, Config::getInstance()->getMaxGenerateRate());
+}
 
 
 void doPOC(){

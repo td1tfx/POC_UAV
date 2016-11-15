@@ -1150,7 +1150,14 @@ void Network::runRounds(int num) {
 
 void Network::runCloudRounds(int num) {
 	for (int i = 0; i < num; i++) {
-		__runOneCloudRound();
+		__runOneCloudRound(1);
+	}
+	//cout << "run round:" << num << " finisid!" << endl;
+}
+
+void Network::runCloudletRounds(int num) {
+	for (int i = 0; i < num; i++) {
+		__runOneCloudRound(0);
 	}
 	//cout << "run round:" << num << " finisid!" << endl;
 }
@@ -1190,7 +1197,7 @@ void Network::__runOneRound() {
 	m_cuTime = t_minTime;
 }
 
-void Network::__runOneCloudRound() {
+void Network::__runOneCloudRound(int cloudType) {
 	float t_minTime = 9999999999;
 	//users
 	vector<User*>::iterator i_user;
@@ -1205,7 +1212,7 @@ void Network::__runOneCloudRound() {
 			int t_dest = t_package->getDestination();
 			int t_nextNodeId = (*i_user)->getNextNode(t_dest);
 			Node* j = m_nodes.at(t_nextNodeId);
-			j->inPackage(t_package);
+			j->inPackage(t_package, cloudType);
 			//float t_sigtime = (*i)->getPerTransSignalDelay();
 			//float t_ptime = (*i)->getPerTransDelay();
 			if (t_package->isSignaling()) {
@@ -1233,7 +1240,7 @@ void Network::__runOneCloudRound() {
 			int t_dest = t_package->getDestination();
 			int t_nextNodeId = (*i_UAV)->getNextNode(t_dest);
 			Node* j = m_nodes.at(t_nextNodeId);
-			j->inPackage(t_package);
+			j->inPackage(t_package, cloudType);
 			//float t_sigtime = (*i)->getPerTransSignalDelay();
 			//float t_ptime = (*i)->getPerTransDelay();
 			if (t_package->isSignaling()) {
@@ -1259,7 +1266,7 @@ void Network::__runOneCloudRound() {
 			int t_dest = t_package->getDestination();
 			int t_nextNodeId = m_cloud->getNextNode(t_dest);
 			Node* j = m_nodes.at(t_nextNodeId);
-			j->inPackage(t_package);
+			j->inPackage(t_package, cloudType);
 			//float t_sigtime = (*i)->getPerTransSignalDelay();
 			//float t_ptime = (*i)->getPerTransDelay();
 			if (t_package->isSignaling()) {

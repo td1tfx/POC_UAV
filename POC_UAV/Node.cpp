@@ -613,7 +613,7 @@ Package* Node::outPackage() {
 	return out_package;
 }
 
-void Node::inPackage(Package* in_package, int recType) {
+void Node::inPackage(Package* in_package, int recType) {//type: 0, cloudlet, 1, cloud 
 	in_package->getHop()++;
 	if (in_package->getDestination() == m_id) {
 		if (in_package->getGenerateTime() == m_nodeTime) {	//this is to avoid the same round

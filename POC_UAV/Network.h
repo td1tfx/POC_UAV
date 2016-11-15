@@ -45,7 +45,7 @@ private:
 	bool __getShortestPath(int destId, int type = 0);
 	bool __getShortestPath(Node* t_node, int type = 0);
 	void __runOneRound();
-	void __runOneCloudRound();
+	void __runOneCloudRound(int cloudType = 0);
 
 public:
 
@@ -73,6 +73,7 @@ public:
 	void getAllCHbyDP();
 	void runRounds(int num);
 	void runCloudRounds(int num);
+	void runCloudletRounds(int num);
 	void updatePribyLoad();
 	void updatePribyRandom();
 	void saveDelay(bool isTrained = false, double genarateRate = 1);
