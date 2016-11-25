@@ -4,6 +4,7 @@
 void doPOC();
 void doRecommendation();
 void doCloudletRecommendation();
+void doUserCheck();
 
 int main(int argc, char *argv[]) {
 
@@ -40,6 +41,10 @@ void doCloudletRecommendation(){
 		//topology->saveData(false, filename, dest);
 	}
 	net->saveDelay(true, Config::getInstance()->getMaxGenerateRate());
+}
+
+void doUserCheck(){
+	
 }
 
 
