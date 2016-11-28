@@ -12,6 +12,7 @@ OPTION_INT(PackageSize, 256);\
 OPTION_INT(SignalingSize, 32);\
 OPTION_INT(MaxColumn, 4);\
 OPTION_INT(MaxRow, 4);\
+OPTION_INT(MaxNetworkSize, 1000);\
 OPTION_INT(Bandwidth, 1024);\
 OPTION_INT(Round, 1000);\
 OPTION_INT(TestRound, 100);\

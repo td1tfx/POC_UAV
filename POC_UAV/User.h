@@ -5,6 +5,8 @@ class User :
 {
 private:
 	int m_userID;
+	float m_footSpeed = 1.5;
+	float m_carSpeed = 18;
 	float m_transRange = 30;
 	float m_interestTime = 1;
 	d_matrix* m_routingMatrix;
@@ -16,5 +18,9 @@ public:
 
 	int& getUserID() { return m_userID; }
 	float& getTransRange() { return m_transRange; }
+	
+	void moveRandom();
+	void moveRandomByFoot();
+	void moveRandomByCar();
 };
 

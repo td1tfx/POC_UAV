@@ -763,6 +763,20 @@ void Node::calculateDelay(bool isTrained)
 		fclose(fout);
 }
 
+
+void Node::moveRandom() {
+	int t_offset1 = 2 * rand() % m_speed - m_speed;
+	int t_offset2 = 2 * rand() % m_speed - m_speed;
+	m_x = m_x + t_offset1;
+	if (m_x<0 || m_x >Config::getInstance()->getMaxNetworkSize()) {
+		m_x = m_x - t_offset1;
+	}
+	m_y = m_y - t_offset2;
+	if (m_y<0 || m_y >Config::getInstance()->getMaxNetworkSize()) {
+		m_y = m_y - t_offset1;
+	}
+}
+
 void Node::initNerualNet() {
 // 	int nnum = m_edges.size();
 // 	m_netQ = new NeuralNet[nnum];

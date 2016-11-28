@@ -54,6 +54,7 @@ private:
 	int m_random;
 	int m_sigCount;
 	int m_pacNum = 0;
+	int m_speed = 10;
 	float allDelay = 0;
 	float allOnehopDelay = 0;
 	float m_nodeTime;
@@ -193,6 +194,7 @@ public:
 	void initMatrix();
 	void initialPackage();
 	void calculateDelay(bool isTrained = false);
+	void moveRandom();
 	Package* outPackage();
 
 

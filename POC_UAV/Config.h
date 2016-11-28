@@ -21,6 +21,7 @@ private:
 	int fullMod;
 	int singleDestMod;
 	int singleOutputMod;
+	int maxNetworkSize;
 
 	NetworkOption _option;
 public:
@@ -70,6 +71,10 @@ public:
 		return testRound;
 	}
 
+	int getMaxNetworkSize() {
+		return maxNetworkSize;
+	}
+
 	int isFullMod() {
 		return fullMod;
 	}
@@ -81,6 +86,7 @@ public:
 	int isSingleOutputMod() {
 		return singleOutputMod;
 	}
+	 
 	//void init();
 };
 
