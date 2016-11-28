@@ -46,6 +46,7 @@ private:
 	bool __getShortestPath(Node* t_node, int type = 0);
 	void __runOneRound();
 	void __runOneCloudRound(int cloudType = 0);
+	void __userMoving(int movingType = 0, int recType = 0);
 
 public:
 
@@ -74,6 +75,7 @@ public:
 	void runRounds(int num);
 	void runCloudRounds(int num);
 	void runCloudletRounds(int num);
+	void runUserMovingRounds(int num);
 	void updatePribyLoad();
 	void updatePribyRandom();
 	void saveDelay(bool isTrained = false, double genarateRate = 1);

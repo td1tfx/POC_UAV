@@ -44,7 +44,11 @@ void doCloudletRecommendation(){
 }
 
 void doUserCheck(){
-	
+	srand(time(NULL));
+	auto net = new Network;
+	net->initCloudletGraph();
+	net->getAllTypeShortestPath();
+	int maxRound = Config::getInstance()->getRound();
 }
 
 

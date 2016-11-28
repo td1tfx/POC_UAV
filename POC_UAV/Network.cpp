@@ -1162,6 +1162,26 @@ void Network::runCloudletRounds(int num) {
 	//cout << "run round:" << num << " finisid!" << endl;
 }
 
+void Network::runUserMovingRounds(int num) {
+	for (int i = 0; i < num; i++) {
+		__userMoving();
+	}
+	//cout << "run round:" << num << " finisid!" << endl;
+}
+
+void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal, 1 by foot 2 by car 
+	vector<User*>::iterator i;
+	for (i = m_users.begin(); i != m_users.end(); i++) {
+		if (movingType == 1) {
+			(*i)->moveRandomByFoot();
+		}
+		else if (movingType == 2) {
+			(*i)->moveRandomByCar();
+		}
+
+	}
+}
+
 void Network::__runOneRound() {
 	vector<Node*>::iterator i;
 	float t_minTime = 9999999999;
