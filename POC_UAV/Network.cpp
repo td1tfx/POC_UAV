@@ -318,10 +318,10 @@ void Network::runPOC(int num)
 		t_node->channelAssignment();
 		t_node->printIMatrix();
 		if (num == 0) {
-			t_node->saveNodeData(m_inDataSize, 1);
+			t_node->saveLinkData(m_inDataSize, 1);
 		}
 		else {
-			t_node->saveNodeData(m_inDataSize, 0);
+			t_node->saveLinkData(m_inDataSize, 0);
 		}
 		m_priNodes.pop();		
 	}
@@ -361,10 +361,10 @@ float Network::runPOCGame(int num, bool isSave)
 		m_priNodes.pop();
 		if (isSave) {
 			if (num == 0) {
-				t_node->saveNodeData(m_inDataSize, 1);
+				t_node->saveLinkData(m_inDataSize, 1);
 			}
 			else {
-				t_node->saveNodeData(m_inDataSize, 0);
+				t_node->saveLinkData(m_inDataSize, 0);
 			}
 		}
 		iterTimes++;
@@ -1077,6 +1077,21 @@ void Network::initTrainNet() {
 	}
 }
 
+void Network::initVenues() {
+	for (int i = 0; i < 10; i++) {
+		venue* t_venue = new venue();
+		t_venue->getX() = rand() % Config::getInstance()->getMaxNetworkSize();
+		t_venue->getY() = rand() % Config::getInstance()->getMaxNetworkSize();
+		t_venue->getZ() = 0;
+		m_venues.push_back(t_venue);
+	}
+	
+// 	vector<venue*>::iterator i_ve;
+// 	for (i_ve = m_venues.begin(); i_ve != m_venues.end(); i_ve++) {
+// 	}
+
+}
+
 
 int Network::trainNet() {
 	vector<Node*>::iterator i;
@@ -1169,16 +1184,27 @@ void Network::runUserMovingRounds(int num) {
 	//cout << "run round:" << num << " finisid!" << endl;
 }
 
-void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal, 1 by foot 2 by car 
+void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal, 1 by foot 2 by car moving type. recType: 0 passive, 1 adaptive 
 	vector<User*>::iterator i;
 	for (i = m_users.begin(); i != m_users.end(); i++) {
-		if (movingType == 1) {
-			(*i)->moveRandomByFoot();
+		if (recType = 0) {
+			if (movingType == 1) {
+				(*i)->moveRandomByFoot();
+			}
+			else if (movingType == 2) {
+				(*i)->moveRandomByCar();
+			}
+			else {
+				(*i)->moveRandom();
+			}
 		}
-		else if (movingType == 2) {
-			(*i)->moveRandomByCar();
+		else if(recType = 1) {
+			
 		}
-
+		else {
+			cout << "wrong recType!" << endl;
+		}
+		
 	}
 }
 
@@ -1349,6 +1375,40 @@ void Network::saveDelay(bool isTrained, double genarateRate) {
 	cout << "throughputPerSecend = " << throughputPerSecend << endl;
 	cout << "totalSignalPacNum = " << totalSpacNum << endl;
 
+}
+
+
+void Network::saveRouting(bool clean, int dataType) {
+	vector<Node*>::iterator i;
+	__getNodesLoad();
+	if (Config::getInstance()->isSingleOutputMod()) {
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			if (Config::getInstance()->isSingleDestMod()) {
+				for (int j = 0; j < m_nodes.size(); j++) {
+					(*i)->saveRoutingData(m_inDataSize,clean,dataType);
+				}
+			}
+			else {
+				(*i)->saveRoutingData(m_inDataSize, clean, dataType);
+			}
+			int t_id = (*i)->getId();
+			//cout << "node:" << t_id << "-data saved!" << endl;
+		}
+	}
+	else {
+		for (i = m_outerNodes.begin(); i != m_outerNodes.end(); i++) {
+			if (Config::getInstance()->isSingleDestMod()) {
+				for (int j = 0; j < m_nodes.size(); j++) {
+					(*i)->saveRoutingData(m_inDataSize, clean, dataType);
+				}
+			}
+			else {
+				(*i)->saveRoutingData(m_inDataSize, clean, dataType);
+			}
+			int t_id = (*i)->getId();
+			//cout << "node:" << t_id << "-data saved!" << endl;
+		}
+	}
 }
 
 

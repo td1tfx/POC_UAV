@@ -43,4 +43,5 @@ void User::moveRandomByCar() {
 	getY() = getY() - t_offset2;
 	if (getY() < 0 || getY() > Config::getInstance()->getMaxNetworkSize()) {
 		getY() = getY() - t_offset1;
+	}
 }

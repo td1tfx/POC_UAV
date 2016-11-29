@@ -5,12 +5,18 @@ void doPOC();
 void doRecommendation();
 void doCloudletRecommendation();
 void doUserCheck();
+void getTrainData(Network* network, double geRate);
+void getTestData(Network* network);
+void runTrainedPath(Network* network, double geRate);
+void Routing();
+
 
 int main(int argc, char *argv[]) {
 
 	//doPOC();
-	doRecommendation();
-	
+	//doRecommendation();
+	Routing();
+
 	system("pause");
 	return argc;
 }
@@ -48,7 +54,9 @@ void doUserCheck(){
 	auto net = new Network;
 	net->initCloudletGraph();
 	net->getAllTypeShortestPath();
+	net->initVenues();
 	int maxRound = Config::getInstance()->getRound();
+	net->runUserMovingRounds(10);
 }
 
 
@@ -128,4 +136,87 @@ void doPOC(){
 	// 	std::cout << "wrongRatio = " << wrongRatio << endl;
 	// 
 }
+
+void Routing()
+{
+
+	Network* net = new Network;
+	net->initGraph();
+	srand(time(NULL));
+	double rate = 400;
+	Config::getInstance()->resetMaxGenerateRate(rate);
+	//net->initTrainNet();
+	//choose one 
+	//runTrainedPath(topology, rate);
+	getTrainData(net, rate);         
+	//getTestData(topology);
+	//net->trainNet();
+	//topology->testNet();
+	delete net;
+	system("pause");
+}
+
+void getTestData(Network* network) {
+
+	int dest = -1; //all data
+	network->isTrained = false;
+	network->getAllShortestPath();
+	network->runRounds(10);
+	network->saveRouting(true,1);
+	int cuRound = 0;
+	int maxRound = Config::getInstance()->getTestRound();
+	while (cuRound < maxRound) {
+		network->runRounds(10);
+		network->getAllShortestPath();
+		network->saveRouting(false, 1);
+		cuRound++;
+	}
+	network->saveDelay();
+
+	cout << "test finalTime=" << network->getCuTime() << endl;
+}
+
+void getTrainData(Network* network, double geRate) {
+	int dest = -1; //all data
+	network->isTrained = false;
+	network->getAllShortestPath();
+	network->runRounds(10);
+	network->saveRouting(true);
+	int cuRound = 0;
+	int maxRound = Config::getInstance()->getRound();
+	while (network->getCuTime() < 1000) {
+		network->runRounds(256);
+		network->getAllShortestPath();
+		network->saveRouting(false);
+		cuRound++;
+	}
+	network->saveDelay(false, geRate);
+
+	cout << "train finalTime=" << network->getCuTime() << endl;
+}
+
+void runTrainedPath(Network* network, double geRate) {
+// 	//char* filename = "../data/node";
+// 	int dest = -1; //all data
+// 	network->isTrained = true;
+// 	network->getAllShortestPath();
+// 	network->getAllTrainedPath();
+// 	network->saveWrongCount(true);
+// 	network->runRoundsWithTrain(10);
+// 	//topology->saveData(true, filename, dest);
+// 	int cuRound = 0;
+// 	int maxRound = Config::getInstance()->getRound();
+// 	while (network->getCuTime() < 1000) {
+// 		network->runRoundsWithTrain(256);
+// 		//topology->getAllShortestPath();
+// 		network->getAllTrainedPath();
+// 		network->saveWrongCount(false);
+// 		//topology->saveData(false, filename, dest);
+// 		cuRound++;
+// 	}
+// 	network->saveDelay(true, geRate);
+// 
+// 	cout << "train finalTime=" << topology->getCuTime() << endl;
+}
+
 

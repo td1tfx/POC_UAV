@@ -22,6 +22,7 @@ Node::Node()
 	m_shortRouting = new d_matrix(maxRow, maxColumn);
 	m_routingMatrix->initData(0);
 	m_shortRouting->initData(-1);
+	m_outputCount = m_routingMatrix->getCol()*m_routingMatrix->getCol();
 	m_inData = nullptr;
 	p_type = type_node;
 	int nnum = 3;
@@ -552,21 +553,32 @@ void Node::CHMatrixTransferBack() {
 }
 
 
-void Node::saveNodeData(int inDataSize, bool clean)
+void Node::saveLinkData(int inDataSize, bool clean, int dataType) //dataType 0 tranData, 1 testData
 {
 	__CHMatrixTransfer();
 	char filename[30];
 	char dir[20];
 	int t_outputCount = 11;
 	int t_inputCount = inDataSize;
-	sprintf(dir, "%s%d", "node" , m_id);
+	if (dataType == 1) {
+		sprintf(dir, "%s%d", "test", m_id);
+	}
+	else {
+		sprintf(dir, "%s%d", "node", m_id);
+	}
+
 	if (_access(dir, 0) == -1) {
 		_mkdir(dir);
 	}
 	vector<int*>::iterator CHi;
 	int linknum = 0;
 	for (CHi = m_CHMatrix.begin(); CHi != m_CHMatrix.end(); CHi++) {
-		sprintf(filename, "%s%d%s%d%s", "node", m_id, "/link", linknum, ".txt");
+		if (dataType == 1) {
+			sprintf(filename, "%s%d%s%d%s", "test", m_id, "/link", linknum, ".txt");
+		}
+		else {
+			sprintf(filename, "%s%d%s%d%s", "node", m_id, "/link", linknum, ".txt");
+		}
 		FILE *fout = stdout;
 		if (filename) {
 			if (clean) {
@@ -605,6 +617,84 @@ void Node::saveNodeData(int inDataSize, bool clean)
 		linknum++;
 		}
 	}
+}
+
+void Node::saveRoutingData(int inDataSize, bool clean, int dataType ,int dest) //dataType 0 tranData, 1 testData
+{
+	__CHMatrixTransfer();
+	char filename[30];
+	char dir[20];
+	int t_inputCount = inDataSize;
+	int t_outputCount = sqrt(m_outputCount);
+	m_pacNum = 0;
+	allDelay = 0;
+	allOnehopDelay = 0;
+	if (dataType == 1) {
+		sprintf(dir, "%s%d", "test", m_id);
+	}
+	else {
+		sprintf(dir, "%s%d", "node", m_id);
+	}
+
+	if (_access(dir, 0) == -1) {
+		_mkdir(dir);
+	}
+	if (dataType == 1) {
+		sprintf(filename, "%s%d%s%d%s", "test", m_id, "/dest", dest, ".txt");
+	}
+	else {
+		sprintf(filename, "%s%d%s%d%s", "node", m_id, "/dest", dest, ".txt");
+	}
+	FILE *fout = stdout;
+	if (filename)
+		if (clean) {
+			fout = fopen(filename, "w+t");
+			fprintf(fout, "input:");
+			fprintf(fout, "%d", t_inputCount);
+			fprintf(fout, "\t");
+			fprintf(fout, "output:");
+			fprintf(fout, "%d", t_outputCount);
+			fprintf(fout, "\t");
+			fprintf(fout, "testCount:");
+			fprintf(fout, "%d", 0);
+			fprintf(fout, "---------------------------------------\n");
+		}
+		else {
+			fout = fopen(filename, "a+t");
+		}
+
+
+		for (int i = 0; i < t_inputCount; i++)
+		{
+			fprintf(fout, "%1.2f", m_inData[i]);
+			fprintf(fout, "\t");
+		}
+		fprintf(fout, "toOut:");
+
+		for (int i = 0; i < t_outputCount; i++)
+		{
+			if (dest == -1) {
+				fprintf(fout, "%1.2f", m_routingMatrix->getData(i));
+			}
+			else {
+				if (Config::getInstance()->isSingleOutputMod()) {
+					int p = m_shortRouting->getData(dest, 0);
+					if (p == i) {
+						fprintf(fout, "%1.2f", 1.00);
+					}
+					else {
+						fprintf(fout, "%1.2f", 0.00);
+					};
+				}
+				else {
+					fprintf(fout, "%1.2f", m_routingMatrix->getData(dest, i));
+				}
+			}
+			fprintf(fout, "\t");
+		}
+		fprintf(fout, "\n");
+		if (filename)
+			fclose(fout);
 }
 
 Package* Node::outPackage() {

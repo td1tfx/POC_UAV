@@ -18,6 +18,7 @@ private:
 	vector<UAV*> m_UAVs;
 	vector<Cloudlet*> m_cloudlets;
 	vector<User*> m_users;
+	vector<venue*> m_venues;
 	Cloud* m_cloud;
 	priority_queue<Node*, vector<Node*>, Compare> m_priNodes;
 	priority_queue<Node*, vector<Node*>, CompareRandom> m_priNodesRandom;
@@ -53,6 +54,7 @@ public:
 	int totalPCount;
 	int wrongPCount;
 	int iterTimes;
+	bool isTrained = false;
 	Network();
 	~Network();
 
@@ -65,6 +67,7 @@ public:
 	void initGraph();
 	void initGraphByFile();
 	void initCloudletGraph();
+	void initVenues();
 	void printCH();
 	void printPath();
 	void printWrongCount();
@@ -79,6 +82,7 @@ public:
 	void updatePribyLoad();
 	void updatePribyRandom();
 	void saveDelay(bool isTrained = false, double genarateRate = 1);
+	void saveRouting(bool clean = false, int dataType = 0);
 	int trainNet();
 
 

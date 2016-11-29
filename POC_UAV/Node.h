@@ -14,6 +14,7 @@
 #include "Timer.h"
 #include <corecrt_io.h>
 #include <direct.h>
+#include "venue.h"
 
 
 #define INFINITY   9999999;
@@ -55,6 +56,7 @@ private:
 	int m_sigCount;
 	int m_pacNum = 0;
 	int m_speed = 10;
+	int m_outputCount;
 	float allDelay = 0;
 	float allOnehopDelay = 0;
 	float m_nodeTime;
@@ -186,7 +188,8 @@ public:
 	void generatePackage(int dest, float nodeTime = -1);
 	void generatePaPerRound();
 	void channelAssignmentCopy(int ch);
-	void saveNodeData(int inDataSize, bool clean);
+	void saveLinkData(int inDataSize, bool clean, int dataType = 0);
+	void saveRoutingData(int inDataSize, bool clean, int dataType = 0, int dest = -1);
 	void initNerualNet();
 	void CHMatrixTransferBack();
 	void inPackage(Package* in_package,int recType = 0); //type: 0, cloudlet, 1, cloud 

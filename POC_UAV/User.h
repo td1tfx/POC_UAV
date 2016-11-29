@@ -19,7 +19,6 @@ public:
 	int& getUserID() { return m_userID; }
 	float& getTransRange() { return m_transRange; }
 	
-	void moveRandom();
 	void moveRandomByFoot();
 	void moveRandomByCar();
 };
