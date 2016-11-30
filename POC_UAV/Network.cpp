@@ -989,7 +989,7 @@ void Network::getAllShortestPath() {
 	}
 	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 		if (__getShortestPath((*i)->getId())) {
-			cout << "finished destination:" << (*i)->getId() << endl;
+			//cout << "finished destination:" << (*i)->getId() << endl;
 		}
 	}
 	__getNodesLoad();
@@ -1224,7 +1224,7 @@ void Network::__runOneRound() {
 			int t_dest = t_package->getDestination();
 			int t_nextNodeId = (*i)->getNextNode(t_dest);
 			Node* j = m_nodes.at(t_nextNodeId);
-			j->inPackage(t_package);
+			j->inPackage(t_package,2);
 			//float t_sigtime = (*i)->getPerTransSignalDelay();
 			//float t_ptime = (*i)->getPerTransDelay();
 			if (t_package->isSignaling()) {
@@ -1333,20 +1333,35 @@ void Network::__runOneCloudRound(int cloudType) {
 	m_cuTime = t_minTime;
 };
 
-void Network::saveDelay(bool isTrained, double genarateRate) {
+void Network::saveDelay(bool isTrained, double genarateRate, int recordType) {	//recordType, 0:all, 1:user 2:UAV
 	char* DelayFile = "totalDelay.txt";
 	FILE *fout = stdout;
 	int totalPacNum = 0;
 	int totalSpacNum = 0;
 	float totalDelay = 0;
 	float totalOnehopDelay = 0;
-	vector<User*>::iterator i;
-	for (i = m_users.begin(); i != m_users.end(); i++) {
-		(*i)->calculateDelay(isTrained);
-		totalPacNum += (*i)->getFinalPacNum();
-		totalDelay += (*i)->getAllDelay();
-		totalOnehopDelay += (*i)->getAllOnehopDelay();
-		//totalSpacNum += (*i)->getFinalSPacNum();
+	if (recordType == 1) {
+		vector<User*>::iterator i;
+		for (i = m_users.begin(); i != m_users.end(); i++) {
+			(*i)->calculateDelay(isTrained);
+			totalPacNum += (*i)->getFinalPacNum();
+			totalDelay += (*i)->getAllDelay();
+			totalOnehopDelay += (*i)->getAllOnehopDelay();
+			//totalSpacNum += (*i)->getFinalSPacNum();
+		}
+	}
+	else if (recordType == 2) {
+		
+	}
+	else {
+		vector<Node*>::iterator i;
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			(*i)->calculateDelay(isTrained);
+			totalPacNum += (*i)->getFinalPacNum();
+			totalDelay += (*i)->getAllDelay();
+			totalOnehopDelay += (*i)->getAllOnehopDelay();
+			//totalSpacNum += (*i)->getFinalSPacNum();
+		}
 	}
 	float averageDelay = totalDelay / totalPacNum;
 	float averageOnehopDelay = totalOnehopDelay / totalPacNum;
@@ -1386,7 +1401,7 @@ void Network::saveRouting(bool clean, int dataType) {
 		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
 			if (Config::getInstance()->isSingleDestMod()) {
 				for (int j = 0; j < m_nodes.size(); j++) {
-					(*i)->saveRoutingData(m_inDataSize,clean,dataType);
+					(*i)->saveRoutingData(m_inDataSize,clean,dataType,j);
 				}
 			}
 			else {
@@ -1400,7 +1415,7 @@ void Network::saveRouting(bool clean, int dataType) {
 		for (i = m_outerNodes.begin(); i != m_outerNodes.end(); i++) {
 			if (Config::getInstance()->isSingleDestMod()) {
 				for (int j = 0; j < m_nodes.size(); j++) {
-					(*i)->saveRoutingData(m_inDataSize, clean, dataType);
+					(*i)->saveRoutingData(m_inDataSize, clean, dataType,j);
 				}
 			}
 			else {

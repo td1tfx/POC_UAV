@@ -81,7 +81,7 @@ public:
 	void runUserMovingRounds(int num);
 	void updatePribyLoad();
 	void updatePribyRandom();
-	void saveDelay(bool isTrained = false, double genarateRate = 1);
+	void saveDelay(bool isTrained = false, double genarateRate = 1, int recordType = 0);
 	void saveRouting(bool clean = false, int dataType = 0);
 	int trainNet();
 

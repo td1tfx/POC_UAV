@@ -144,8 +144,8 @@ void Routing()
 	net->initGraph();
 	net->updatePribyLoad();
 	srand(time(NULL));
-	double rate = 400;
-	Config::getInstance()->resetMaxGenerateRate(rate);
+	double rate = Config::getInstance()->getMaxGenerateRate();
+	//Config::getInstance()->resetMaxGenerateRate(rate);
 	//net->initTrainNet();
 	//choose one 
 	//runTrainedPath(topology, rate);
@@ -185,13 +185,13 @@ void getTrainData(Network* network, double geRate) {
 	network->saveRouting(true);
 	int cuRound = 0;
 	int maxRound = Config::getInstance()->getRound();
-	while (network->getCuTime() < 1000) {
-		network->runRounds(256);
+	while (cuRound < 10000) {
+		network->runRounds(10);
 		network->getAllShortestPath();
 		network->saveRouting(false);
 		cuRound++;
 	}
-	network->saveDelay(false, geRate);
+	network->saveDelay(false, geRate, 0);
 
 	cout << "train finalTime=" << network->getCuTime() << endl;
 }
