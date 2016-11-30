@@ -71,6 +71,7 @@ private:
 	d_matrix* m_IMatrix_copy;
 	d_matrix* m_OCMatrix;
 	d_matrix* m_routingMatrix;	//routing Matrix with binary
+	d_matrix* m_trainRoutingMatrix;   //routing Matrix with binary after training 
 	d_matrix* m_shortRouting;   //routing Matrix with decimal
 	Graph *m_conGraph;
 	vector<Node*> m_neigherNodes;
@@ -184,9 +185,8 @@ public:
 	float bestResponseInAoCAG();
 	void channelAssignment();
 	void channelAssignmentNormal();
-	void generatePackage();
-	void generatePackage(int dest, float nodeTime = -1);
-	void generatePaPerRound();
+	void generatePackage(int destType = 0, int dest = -1, float nodeTime = -1); //0: GWdest, 1:randomOuterDest
+	void generatePaPerRound(int destType = 0); //0: GWdest, 1:randomOuterDest
 	void channelAssignmentCopy(int ch);
 	void saveLinkData(int inDataSize, bool clean, int dataType = 0);
 	void saveRoutingData(int inDataSize, bool clean, int dataType = 0, int dest = -1);

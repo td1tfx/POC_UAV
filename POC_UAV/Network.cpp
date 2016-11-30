@@ -1216,9 +1216,10 @@ void Network::__runOneRound() {
 			continue;
 		}
 		if ((*i)->isOuterNode()) {
-			(*i)->generatePaPerRound();
+			(*i)->generatePaPerRound(1);
 		}
 		if (!(*i)->isQueueEmpty()) {
+			int text1 = (*i)->getId();
 			Package* t_package = (*i)->outPackage();
 			int t_dest = t_package->getDestination();
 			int t_nextNodeId = (*i)->getNextNode(t_dest);

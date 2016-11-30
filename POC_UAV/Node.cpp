@@ -19,8 +19,10 @@ Node::Node()
 	m_perTransDelay = t_pSize / t_bWidth;
 	m_perTransSignalDelay = Config::getInstance()->getSignalSize() / t_bWidth;
 	m_routingMatrix = new d_matrix(maxRow, maxColumn);
+	m_trainRoutingMatrix = new d_matrix(maxRow, maxColumn);
 	m_shortRouting = new d_matrix(maxRow, maxColumn);
 	m_routingMatrix->initData(0);
+	m_trainRoutingMatrix->initData(-1);
 	m_shortRouting->initData(-1);
 	m_outputCount = m_routingMatrix->getCol()*m_routingMatrix->getCol();
 	m_inData = nullptr;
@@ -315,49 +317,48 @@ void Node::initialPackage() {
 // 	}
 }
 
-void Node::generatePaPerRound() {
+void Node::generatePaPerRound(int destType) { //0: GWdest, 1:randomOuterDest
 	double pNumPer = (double)(Config::getInstance()->getBandwidth() / Config::getInstance()->getPackageSize());
 	double gRatePerRound = Config::getInstance()->getMaxGenerateRate() / pNumPer;
 	int threshold = rand() % 2000 * gRatePerRound;
 	int ge_random = rand() % 1000;
 	while (ge_random < threshold) {
-		generatePackage();
+		generatePackage(destType);
 		ge_random = ge_random + 1000;
 	}
 }
 
 
 
-void Node::generatePackage() {
+void Node::generatePackage(int destType, int dest, float nodeTime) {  //0: GWdest, 1:randomOuterDest
 	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
 	Package *m_package = new Package(pid, m_nodeTime);
-	int dest = m_GWNum;
-// 	while (dest == m_id) {
-// 		dest = m_outerNodes.at(rand() % m_outerNodes.size())->getId();
-// 	}
+	if (dest = -1) {
+		dest = m_id;
+		if (destType == 0) {
+			dest = m_GWNum;
+		}
+		else {
+			while (dest == m_id) {
+				dest = m_outerNodes.at(rand() % m_outerNodes.size())->getId();
+			}
+		}
+	}else {		
+	}
 	m_package->setSource(m_id);
 	m_package->setDestination(dest);
 	m_package->setGenerateTime(m_nodeTime);
-// 	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
-// 	m_package->setPathSize(size);
-// 	for (int i = 0; i < size; i++) {
-// 		m_package->getPathData(i) = m_trainRouting->getData(dest, i);
-// 	}
-	m_qServe.push(m_package);
-	m_packageCount++;
-}
-
-void Node::generatePackage(int dest, float nodeTime) {	
-	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
-	Package *m_package = new Package(pid, m_nodeTime);
-	m_package->setSource(m_id);
-	m_package->setDestination(dest);
 	if (nodeTime == -1) {
 		m_package->setGenerateTime(m_nodeTime);
 	}
 	else {
 		m_package->setGenerateTime(nodeTime);
 	}
+// 	int size = Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow();
+// 	m_package->setPathSize(size);
+// 	for (int i = 0; i < size; i++) {
+// 		m_package->getPathData(i) = m_trainRouting->getData(dest, i);
+// 	}
 	m_qServe.push(m_package);
 	m_packageCount++;
 }

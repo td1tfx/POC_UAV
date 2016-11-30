@@ -142,6 +142,7 @@ void Routing()
 
 	Network* net = new Network;
 	net->initGraph();
+	net->updatePribyLoad();
 	srand(time(NULL));
 	double rate = 400;
 	Config::getInstance()->resetMaxGenerateRate(rate);
