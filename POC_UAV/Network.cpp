@@ -1064,16 +1064,60 @@ void Network::__getNodesLoad() {
 	}
 }
 
-void Network::initTrainNet() {
-	vector<Node*>::iterator i;
-	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-		for (int j = 0; j < (*i)->getEdges().size(); j++) {
-			(*i)->initNerualNet();
-			(*i)->getNet(j).loadOptoin("learnConfig.ini");
-			(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
-			(*i)->getNet(j).init();
-			cout << "node:" << (*i)->getId() << "-link:" << j << "NeuralNet init finished!" << endl;
+void Network::initTrainNet(int TrainType) {  //0: link, 1:routing
+	if (TrainType == 0) {
+		vector<Node*>::iterator i;
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			for (int j = 0; j < (*i)->getEdges().size(); j++) {
+				(*i)->initNerualNet();
+				(*i)->getNet(j).loadOptoin("learnConfig.ini");
+				(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
+				(*i)->getNet(j).init();
+				cout << "node:" << (*i)->getId() << "-link:" << j << "NeuralNet init finished!" << endl;
+			}
 		}
+	}
+	else if(TrainType==1){
+		vector<Node*>::iterator i;
+		if (Config::getInstance()->isSingleOutputMod()) {
+			for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+				if (Config::getInstance()->isSingleDestMod()) {
+					for (int j = 0; j < m_nodes.size(); j++) {
+						(*i)->getNet(j).loadOptoin("learnConfig.ini");
+						(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
+						(*i)->getNet(j).init();
+						cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
+					}
+				}
+				else {
+					(*i)->getNet(0).loadOptoin("learnConfig.ini");
+					(*i)->getNet(0).resetOption((*i)->getId());
+					(*i)->getNet(0).init();
+					//cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
+				}
+			}
+		}
+		else {
+			for (i = m_outerNodes.begin(); i != m_outerNodes.end(); i++) {
+				if (Config::getInstance()->isSingleDestMod()) {
+					for (int j = 0; j < m_nodes.size(); j++) {
+						(*i)->getNet(j).loadOptoin("learnConfig.ini");
+						(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
+						(*i)->getNet(j).init();
+						//cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
+					}
+				}
+				else {
+					(*i)->getNet(0).loadOptoin("learnConfig.ini");
+					(*i)->getNet(0).resetOption((*i)->getId());
+					(*i)->getNet(0).init();
+					//cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
+				}
+			}
+		}
+	}
+	else {
+		cout << "wrong train type!" << endl;
 	}
 }
 

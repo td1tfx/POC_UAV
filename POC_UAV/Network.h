@@ -73,7 +73,7 @@ public:
 	void printWrongCount();
 	void getAllShortestPath();
 	void getAllTypeShortestPath();
-	void initTrainNet();
+	void initTrainNet(int trainType = 0);
 	void getAllCHbyDP();
 	void runRounds(int num);
 	void runCloudRounds(int num);

@@ -146,12 +146,12 @@ void Routing()
 	srand(time(NULL));
 	double rate = Config::getInstance()->getMaxGenerateRate();
 	//Config::getInstance()->resetMaxGenerateRate(rate);
-	//net->initTrainNet();
+	net->initTrainNet(1);
 	//choose one 
 	//runTrainedPath(topology, rate);
-	getTrainData(net, rate);         
+	//getTrainData(net, rate);         
 	//getTestData(topology);
-	//net->trainNet();
+	net->trainNet();
 	//topology->testNet();
 	delete net;
 	system("pause");
