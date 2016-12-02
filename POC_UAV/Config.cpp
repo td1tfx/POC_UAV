@@ -20,6 +20,8 @@ Config::Config()
 	singleDestMod = _option.IsSingleDestMod;
 	singleOutputMod = _option.IsSingleOutputMod;
 	maxNetworkSize = _option.MaxNetworkSize;
+	recommendationMod = _option.RecommendationMod;
+	userMovingMod = _option.UserMovingMod;
 	while (maxPacNumPerNode < round*maxGenerateRate) {
 		maxPacNumPerNode = maxPacNumPerNode * 10;
 	}	

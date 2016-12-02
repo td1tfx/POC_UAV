@@ -21,5 +21,7 @@ public:
 	
 	void moveRandomByFoot();
 	void moveRandomByCar();
+	void moveByFoot(venue* t_venue);
+	void moveByCar(venue* t_venue)
 };
 

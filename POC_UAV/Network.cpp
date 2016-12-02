@@ -1084,14 +1084,14 @@ void Network::initTrainNet(int TrainType) {  //0: link, 1:routing
 				if (Config::getInstance()->isSingleDestMod()) {
 					for (int j = 0; j < m_nodes.size(); j++) {
 						(*i)->getNet(j).loadOptoin("learnConfig.ini");
-						(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
+						(*i)->getNet(j).resetOption((*i)->getId(), 1, j, 1);
 						(*i)->getNet(j).init();
 						cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
 					}
 				}
 				else {
 					(*i)->getNet(0).loadOptoin("learnConfig.ini");
-					(*i)->getNet(0).resetOption((*i)->getId());
+					(*i)->getNet(0).resetOption((*i)->getId(),0,0,1);
 					(*i)->getNet(0).init();
 					//cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
 				}
@@ -1102,14 +1102,14 @@ void Network::initTrainNet(int TrainType) {  //0: link, 1:routing
 				if (Config::getInstance()->isSingleDestMod()) {
 					for (int j = 0; j < m_nodes.size(); j++) {
 						(*i)->getNet(j).loadOptoin("learnConfig.ini");
-						(*i)->getNet(j).resetOption((*i)->getId(), 1, j);
+						(*i)->getNet(j).resetOption((*i)->getId(), 1, j, 1);
 						(*i)->getNet(j).init();
 						//cout << "node:" << (*i)->getId() << "-dest:" << j << "NeuralNet init finished!" << endl;
 					}
 				}
 				else {
 					(*i)->getNet(0).loadOptoin("learnConfig.ini");
-					(*i)->getNet(0).resetOption((*i)->getId());
+					(*i)->getNet(0).resetOption((*i)->getId(),0,0,1);
 					(*i)->getNet(0).init();
 					//cout << "node:" << (*i)->getId() << "NeuralNet init finished!" << endl;
 				}
@@ -1117,7 +1117,7 @@ void Network::initTrainNet(int TrainType) {  //0: link, 1:routing
 		}
 	}
 	else {
-		cout << "wrong train type!" << endl;
+		cout << "wrong train type in init!" << endl;
 	}
 }
 
@@ -1137,17 +1137,58 @@ void Network::initVenues() {
 }
 
 
-int Network::trainNet() {
-	vector<Node*>::iterator i;
-	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
-		Timer t;
-		t.start();
-		for (int j = 0; j < (*i)->getEdges().size(); j++) {
-			(*i)->getNet(j).run();
+int Network::trainNet(int trainType) { //0: link, 1:routing
+	if (trainType==0) {
+		vector<Node*>::iterator i;
+		for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+			Timer t;
+			t.start();
+			for (int j = 0; j < (*i)->getEdges().size(); j++) {
+				(*i)->getNet(j).run();
+			}
+			t.stop();
+			fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
 		}
-		t.stop();
-		fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
 	}
+	else if (trainType == 1) {
+		vector<Node*>::iterator i;
+		if (Config::getInstance()->isSingleOutputMod()) {
+			for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+				Timer t;
+				t.start();
+				if (Config::getInstance()->isSingleDestMod()) {
+					for (int j = 0; j < m_nodes.size(); j++) {
+						(*i)->getNet(j).run();
+					}
+				}
+				else {
+					(*i)->getNet(0).run();
+				}
+				t.stop();
+				fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
+			}
+		}
+		else {
+			for (i = m_outerNodes.begin(); i != m_outerNodes.end(); i++) {
+				Timer t;
+				t.start();
+				if (Config::getInstance()->isSingleDestMod()) {
+					for (int j = 0; j < m_nodes.size(); j++) {
+						(*i)->getNet(j).run();
+					}
+				}
+				else {
+					(*i)->getNet(0).run();
+				}
+				t.stop();
+				fprintf(stderr, "node %d Run neural net end. Time is %lf s.\n", (*i)->getId(), t.getElapsedTime());
+			}
+		}
+	}
+	else {
+		cout << "wrong train type in train phase!" << endl;
+	}
+
 #ifdef _WIN32
 	getchar();
 #endif
@@ -1223,7 +1264,12 @@ void Network::runCloudletRounds(int num) {
 
 void Network::runUserMovingRounds(int num) {
 	for (int i = 0; i < num; i++) {
-		__userMoving();
+		if (Config::getInstance()->getRecommendationMod == 0) {	//passive
+			__userMoving(Config::getInstance()->getUserMovingMod(), Config::getInstance()->getRecommendationMod);
+		}
+		else if (Config::getInstance()->getRecommendationMod == 1) { //adaptive
+			__userMoving();
+		}
 	}
 	//cout << "run round:" << num << " finisid!" << endl;
 }
@@ -1243,7 +1289,15 @@ void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal
 			}
 		}
 		else if(recType = 1) {
-			
+			if (movingType == 1) {
+				(*i)->moveByFoot(m_venues.at(0));
+			}
+			else if (movingType == 2) {
+				(*i)->moveByCar(m_venues.at(0));
+			}
+			else {
+				(*i)->moveRandom();
+			}
 		}
 		else {
 			cout << "wrong recType!" << endl;
@@ -1471,6 +1525,19 @@ void Network::saveRouting(bool clean, int dataType) {
 	}
 }
 
+venue* Network::getNearestVenue(Node *t_node) {
+	float minDistance = 999999999;
+	venue* t_venue;
+	vector<venue*>::iterator i_ve;
+	for (i_ve = m_venues.begin(); i_ve != m_venues.end(); i_ve++) {
+		float t_distance = sqrt(pow((*i_ve)->getX - t_node->getX(), 2) + pow((*i_ve)->getY - t_node->getY(), 2) + pow((*i_ve)->getZ - t_node->getZ(), 2));
+		if (t_distance < minDistance) {
+			minDistance = t_distance;
+			t_venue = *i_ve;
+		}
+	}
+	return t_venue;
+}
 
 string Network::toString(int a)
 {

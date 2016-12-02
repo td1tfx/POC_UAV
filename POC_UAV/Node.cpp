@@ -27,7 +27,7 @@ Node::Node()
 	m_outputCount = m_routingMatrix->getCol()*m_routingMatrix->getCol();
 	m_inData = nullptr;
 	p_type = type_node;
-	int nnum = 3;
+	int nnum = maxRow;
 	m_netQ = new NeuralNet[nnum];
 	__init();
 }

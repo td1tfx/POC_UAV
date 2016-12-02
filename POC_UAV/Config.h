@@ -22,6 +22,8 @@ private:
 	int singleDestMod;
 	int singleOutputMod;
 	int maxNetworkSize;
+	int recommendationMod;
+	int userMovingMod;
 
 	NetworkOption _option;
 public:
@@ -87,6 +89,13 @@ public:
 		return singleOutputMod;
 	}
 	 
+	int getRecommendationMod() {
+		return recommendationMod;
+	}
+
+	int getUserMovingMod() {
+		return userMovingMod;
+	}
 	//void init();
 };
 

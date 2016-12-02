@@ -15,7 +15,8 @@ int main(int argc, char *argv[]) {
 
 	//doPOC();
 	//doRecommendation();
-	Routing();
+	//Routing();
+	doUserCheck();
 
 	system("pause");
 	return argc;
@@ -151,7 +152,7 @@ void Routing()
 	//runTrainedPath(topology, rate);
 	//getTrainData(net, rate);         
 	//getTestData(topology);
-	net->trainNet();
+	net->trainNet(1);
 	//topology->testNet();
 	delete net;
 	system("pause");
@@ -185,7 +186,7 @@ void getTrainData(Network* network, double geRate) {
 	network->saveRouting(true);
 	int cuRound = 0;
 	int maxRound = Config::getInstance()->getRound();
-	while (cuRound < 10000) {
+	while (cuRound < 1000) {
 		network->runRounds(10);
 		network->getAllShortestPath();
 		network->saveRouting(false);

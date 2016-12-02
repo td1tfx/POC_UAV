@@ -417,18 +417,17 @@ void NeuralNet::init() {
 	setRegular(_option.Regular);
 }
 
-void NeuralNet::resetOption(int nodeId, int isSingleMod, int linkId) {
-
-	if (isSingleMod == 1) {
-		char dataFilename[30];
-		char testFilename[30];
-		char loadFilename[30];
-		char saveFilename[30];
-		char dir[20];
-		sprintf(dataFilename, "%s%d%s%d%s", "node", nodeId, "/link", linkId, ".txt");
-		sprintf(testFilename, "%s%d%s%d%s", "test", nodeId, "/link", linkId, ".txt");
-		sprintf(loadFilename, "%s%d%s%d%s", "node", nodeId, "/save", linkId, ".txt");
-		sprintf(saveFilename, "%s%d%s%d%s", "node", nodeId, "/save", linkId, ".txt");
+void NeuralNet::resetOption(int nodeId, int isSingleMod, int id, int trainType) { //0:link, 1:routing
+	char dataFilename[30];
+	char testFilename[30];
+	char loadFilename[30];
+	char saveFilename[30];
+	char dir[20];
+	if (trainType == 0) {
+		sprintf(dataFilename, "%s%d%s%d%s", "node", nodeId, "/link", id, ".txt");
+		sprintf(testFilename, "%s%d%s%d%s", "test", nodeId, "/link", id, ".txt");
+		sprintf(loadFilename, "%s%d%s%d%s", "node", nodeId, "/linkSave", id, ".txt");
+		sprintf(saveFilename, "%s%d%s%d%s", "node", nodeId, "/linkSave", id, ".txt");
 		sprintf(dir, "%s%d", "node", nodeId);
 		if (_access(dir, 0) == -1) {
 			_mkdir(dir);
@@ -437,20 +436,41 @@ void NeuralNet::resetOption(int nodeId, int isSingleMod, int linkId) {
 		_option.TestFile = testFilename;
 		_option.LoadFile = loadFilename;
 		_option.SaveFile = saveFilename;
-		
+	}
+	else if (trainType == 1) {
+		if (isSingleMod == 1) {
+			sprintf(dataFilename, "%s%d%s%d%s", "node", nodeId, "/dest", id, ".txt");
+			sprintf(testFilename, "%s%d%s%d%s", "test", nodeId, "/dest", id, ".txt");
+			sprintf(loadFilename, "%s%d%s%d%s", "node", nodeId, "/routingSave", id, ".txt");
+			sprintf(saveFilename, "%s%d%s%d%s", "node", nodeId, "/routingSave", id, ".txt");
+			sprintf(dir, "%s%d", "node", nodeId);
+			if (_access(dir, 0) == -1) {
+				_mkdir(dir);
+			}
+			_option.DataFile = dataFilename;
+			_option.TestFile = testFilename;
+			_option.LoadFile = loadFilename;
+			_option.SaveFile = saveFilename;
+
+		}
+		else {
+			std::string str1 = "save";
+			std::string str2 = "node";
+			std::string str3 = ".txt";
+			std::string str4 = "test";
+			_option.DataFile = str2 + toString(nodeId) + str3;
+			_option.LoadFile = str1 + toString(nodeId) + str3;
+			_option.SaveFile = str1 + toString(nodeId) + str3;
+			_option.TestFile = str4 + toString(nodeId) + str3;;
+			//_option.LoadNet = 1;
+			//_option.UseMINST = -1;
+		}
 	}
 	else {
-		std::string str1 = "save";
-		std::string str2 = "node";
-		std::string str3 = ".txt";
-		std::string str4 = "test";
-		_option.DataFile = str2 + toString(nodeId) + str3;
-		_option.LoadFile = str1 + toString(nodeId) + str3;
-		_option.SaveFile = str1 + toString(nodeId) + str3;
-		_option.TestFile = str4 + toString(nodeId) + str3;;
-		//_option.LoadNet = 1;
-		//_option.UseMINST = -1;
+		//cout << "wrong train type in config phase!" << endl;
 	}
+
+
 }
 
 void NeuralNet::run()

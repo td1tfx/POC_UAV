@@ -45,3 +45,55 @@ void User::moveRandomByCar() {
 		getY() = getY() - t_offset1;
 	}
 }
+
+void User::moveByFoot(venue* t_venue) {
+	float t_offset1, t_offset2;
+	if (t_venue->getX() - getX() > 0) {
+		t_offset1 = rand() % (int)(m_footSpeed * 100);
+	}
+	else {
+		t_offset1 = -rand() % (int)(m_footSpeed * 100);
+	}
+	if (t_venue->getY() - getY() < 0) {
+		 t_offset2 = rand() % (int)(m_footSpeed * 100);
+	}
+	else {
+		t_offset2 = -rand() % (int)(m_footSpeed * 100);
+	}
+	t_offset1 = t_offset1 / 100;
+	t_offset2 = t_offset2 / 100;
+	getX() = getX() + t_offset1;
+	if (getX() < 0 || getX() > Config::getInstance()->getMaxNetworkSize()) {
+		getX() = getX() - t_offset1;
+	}
+	getY() = getY() - t_offset2;
+	if (getY() < 0 || getY() > Config::getInstance()->getMaxNetworkSize()) {
+		getY() = getY() - t_offset1;
+	}
+}
+
+void User::moveByCar(venue* t_venue) {
+	float t_offset1, t_offset2;
+	if (t_venue->getX() - getX() > 0) {
+		t_offset1 = rand() % (int)(m_carSpeed * 100);
+	}
+	else {
+		t_offset1 = -rand() % (int)(m_carSpeed * 100);
+	}
+	if (t_venue->getY() - getY() < 0) {
+		t_offset2 = rand() % (int)(m_carSpeed * 100);
+	}
+	else {
+		t_offset2 = -rand() % (int)(m_carSpeed * 100);
+	}
+	t_offset1 = t_offset1 / 100;
+	t_offset2 = t_offset2 / 100;
+	getX() = getX() + t_offset1;
+	if (getX() < 0 || getX() > Config::getInstance()->getMaxNetworkSize()) {
+		getX() = getX() - t_offset1;
+	}
+	getY() = getY() - t_offset2;
+	if (getY() < 0 || getY() > Config::getInstance()->getMaxNetworkSize()) {
+		getY() = getY() - t_offset1;
+	}
+}

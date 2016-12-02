@@ -48,6 +48,7 @@ private:
 	void __runOneRound();
 	void __runOneCloudRound(int cloudType = 0);
 	void __userMoving(int movingType = 0, int recType = 0);
+	venue* getNearestVenue(Node *t_node);
 
 public:
 
@@ -83,7 +84,7 @@ public:
 	void updatePribyRandom();
 	void saveDelay(bool isTrained = false, double genarateRate = 1, int recordType = 0);
 	void saveRouting(bool clean = false, int dataType = 0);
-	int trainNet();
+	int trainNet(int trainType = 0);
 
 
 

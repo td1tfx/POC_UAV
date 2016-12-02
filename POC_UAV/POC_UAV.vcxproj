@@ -78,6 +78,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\Users\tfx\Downloads\boost_1_61_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
