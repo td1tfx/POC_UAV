@@ -1264,10 +1264,10 @@ void Network::runCloudletRounds(int num) {
 
 void Network::runUserMovingRounds(int num) {
 	for (int i = 0; i < num; i++) {
-		if (Config::getInstance()->getRecommendationMod == 0) {	//passive
-			__userMoving(Config::getInstance()->getUserMovingMod(), Config::getInstance()->getRecommendationMod);
+		if (Config::getInstance()->getRecommendationMod() == 0) {	//passive
+			__userMoving(Config::getInstance()->getUserMovingMod(), Config::getInstance()->getRecommendationMod());
 		}
-		else if (Config::getInstance()->getRecommendationMod == 1) { //adaptive
+		else if (Config::getInstance()->getRecommendationMod() == 1) { //adaptive
 			__userMoving();
 		}
 	}
@@ -1277,6 +1277,7 @@ void Network::runUserMovingRounds(int num) {
 void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal, 1 by foot 2 by car moving type. recType: 0 passive, 1 adaptive 
 	vector<User*>::iterator i;
 	for (i = m_users.begin(); i != m_users.end(); i++) {
+		getNearestVenue(*i);
 		if (recType = 0) {
 			if (movingType == 1) {
 				(*i)->moveRandomByFoot();
@@ -1530,7 +1531,7 @@ venue* Network::getNearestVenue(Node *t_node) {
 	venue* t_venue;
 	vector<venue*>::iterator i_ve;
 	for (i_ve = m_venues.begin(); i_ve != m_venues.end(); i_ve++) {
-		float t_distance = sqrt(pow((*i_ve)->getX - t_node->getX(), 2) + pow((*i_ve)->getY - t_node->getY(), 2) + pow((*i_ve)->getZ - t_node->getZ(), 2));
+		float t_distance = sqrt(pow((*i_ve)->getX() - t_node->getX(), 2) + pow((*i_ve)->getY() - t_node->getY(), 2) + pow((*i_ve)->getZ() - t_node->getZ(), 2));
 		if (t_distance < minDistance) {
 			minDistance = t_distance;
 			t_venue = *i_ve;
