@@ -22,6 +22,7 @@ Config::Config()
 	maxNetworkSize = _option.MaxNetworkSize;
 	recommendationMod = _option.RecommendationMod;
 	userMovingMod = _option.UserMovingMod;
+	thresholdDis = _option.ThresholdDis;
 	while (maxPacNumPerNode < round*maxGenerateRate) {
 		maxPacNumPerNode = maxPacNumPerNode * 10;
 	}	

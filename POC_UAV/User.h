@@ -19,9 +19,12 @@ public:
 	int& getUserID() { return m_userID; }
 	float& getTransRange() { return m_transRange; }
 	
+	bool checkIsValid(venue* t_venue);
+
 	void moveRandomByFoot();
 	void moveRandomByCar();
 	void moveByFoot(venue* t_venue);
-	void moveByCar(venue* t_venue)
+	void moveByCar(venue* t_venue);
+
 };
 

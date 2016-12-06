@@ -85,7 +85,7 @@ public:
 	void saveDelay(bool isTrained = false, double genarateRate = 1, int recordType = 0);
 	void saveRouting(bool clean = false, int dataType = 0);
 	int trainNet(int trainType = 0);
-
+	int getValidNumber();
 
 
 	string toString(int a);

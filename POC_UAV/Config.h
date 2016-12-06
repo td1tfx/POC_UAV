@@ -24,6 +24,7 @@ private:
 	int maxNetworkSize;
 	int recommendationMod;
 	int userMovingMod;
+	int thresholdDis;
 
 	NetworkOption _option;
 public:
@@ -95,6 +96,10 @@ public:
 
 	int getUserMovingMod() {
 		return userMovingMod;
+	}
+
+	int getThresholdDis() {
+		return thresholdDis;
 	}
 	//void init();
 };

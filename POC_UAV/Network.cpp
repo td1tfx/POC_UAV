@@ -1127,6 +1127,7 @@ void Network::initVenues() {
 		t_venue->getX() = rand() % Config::getInstance()->getMaxNetworkSize();
 		t_venue->getY() = rand() % Config::getInstance()->getMaxNetworkSize();
 		t_venue->getZ() = 0;
+		t_venue->getId() = i;
 		m_venues.push_back(t_venue);
 	}
 	
@@ -1268,7 +1269,7 @@ void Network::runUserMovingRounds(int num) {
 			__userMoving(Config::getInstance()->getUserMovingMod(), Config::getInstance()->getRecommendationMod());
 		}
 		else if (Config::getInstance()->getRecommendationMod() == 1) { //adaptive
-			__userMoving();
+			__userMoving(Config::getInstance()->getUserMovingMod(), Config::getInstance()->getRecommendationMod());
 		}
 	}
 	//cout << "run round:" << num << " finisid!" << endl;
@@ -1278,7 +1279,7 @@ void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal
 	vector<User*>::iterator i;
 	for (i = m_users.begin(); i != m_users.end(); i++) {
 		getNearestVenue(*i);
-		if (recType = 0) {
+		if (recType == 0) {
 			if (movingType == 1) {
 				(*i)->moveRandomByFoot();
 			}
@@ -1289,7 +1290,7 @@ void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal
 				(*i)->moveRandom();
 			}
 		}
-		else if(recType = 1) {
+		else if(recType == 1) {
 			if (movingType == 1) {
 				(*i)->moveByFoot(m_venues.at(0));
 			}
@@ -1538,6 +1539,21 @@ venue* Network::getNearestVenue(Node *t_node) {
 		}
 	}
 	return t_venue;
+}
+
+int Network::getValidNumber() {
+	int validNumber = 0;
+	vector<User*>::iterator i_u;
+	for (i_u = m_users.begin(); i_u != m_users.end(); i_u++) {
+		venue* t_venue = getNearestVenue(*i_u);
+		int test = t_venue->getX();
+		if ((*i_u)->checkIsValid(t_venue)) {
+			validNumber++;
+		}
+	}
+	cout << "totalNumber = " << m_users.size()<<endl;
+	cout << "validNumber " << validNumber << endl;
+		return validNumber;
 }
 
 string Network::toString(int a)

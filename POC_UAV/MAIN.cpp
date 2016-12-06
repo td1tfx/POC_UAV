@@ -57,7 +57,8 @@ void doUserCheck(){
 	net->getAllTypeShortestPath();
 	net->initVenues();
 	int maxRound = Config::getInstance()->getRound();
-	net->runUserMovingRounds(10);
+	net->runUserMovingRounds(100);
+	net->getValidNumber();
 }
 
 
