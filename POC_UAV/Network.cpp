@@ -1344,7 +1344,7 @@ void Network::__runOneRound() {
 	m_cuTime = t_minTime;
 }
 
-void Network::__runOneCloudRound(int cloudType) {
+void Network::__runOneCloudRound(int cloudType) {    //cloudtype: 0 cloudlet 1 cloud
 	float t_minTime = 9999999999;
 	//users
 	vector<User*>::iterator i_user;

@@ -737,13 +737,13 @@ void Node::inPackage(Package* in_package, int recType) {//type: 0, cloudlet, 1, 
 					m_qServe.push(in_package);
 				}
 				else {
-					generatePackage(in_package->getSource(), in_package->getGenerateTime());
+					generatePackage(0,in_package->getSource(), in_package->getGenerateTime());
 					in_package->setTerminalTime(m_nodeTime);
 					m_qFinished.push(in_package);
 				}
 			}
 			else if (this->p_type == type_cloud) {
-				generatePackage(in_package->getSource(),in_package->getGenerateTime());
+				generatePackage(0,in_package->getSource(),in_package->getGenerateTime());
 				in_package->setTerminalTime(m_nodeTime);
 				m_qFinished.push(in_package);
 			}

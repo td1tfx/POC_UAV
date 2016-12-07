@@ -14,9 +14,10 @@ void Routing();
 int main(int argc, char *argv[]) {
 
 	//doPOC();
-	//doRecommendation();
+	doRecommendation();
+	//doCloudletRecommendation();
 	//Routing();
-	doUserCheck();
+	//doUserCheck();
 
 	system("pause");
 	return argc;
