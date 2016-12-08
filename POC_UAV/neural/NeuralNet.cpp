@@ -179,6 +179,8 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 		{
 			e /= (_train_groupCount*OutputNodeCount);
 			fprintf(stderr, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
+			//const char* wight = _option.SaveFile.c_str() + count;
+			//outputBondWeight(_option.SaveFile.c_str());
 			if (e < tol || std::abs(e - e0) < dtol) break;
 			e0 = e;
 			e = 0;

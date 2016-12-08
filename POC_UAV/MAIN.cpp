@@ -29,7 +29,7 @@ void doRecommendation() {
 	net->initCloudletGraph();
 	net->getAllTypeShortestPath();
 	int maxRound = Config::getInstance()->getRound();
-	net->runCloudRounds(100);
+	net->runCloudRounds(1);
 	while (net->getCuTime() < 100) {
 		net->runCloudRounds(100);
 		//topology->saveData(false, filename, dest);
@@ -43,7 +43,7 @@ void doCloudletRecommendation(){
 	net->initCloudletGraph();
 	net->getAllTypeShortestPath();
 	int maxRound = Config::getInstance()->getRound();
-	net->runCloudletRounds(100);
+	net->runCloudletRounds(1);
 	while (net->getCuTime() < 100) {
 		net->runCloudletRounds(100);
 		//topology->saveData(false, filename, dest);

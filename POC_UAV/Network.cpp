@@ -1155,6 +1155,7 @@ int Network::trainNet(int trainType) { //0: link, 1:routing
 		vector<Node*>::iterator i;
 		if (Config::getInstance()->isSingleOutputMod()) {
 			for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+				//i = m_nodes.begin()
 				Timer t;
 				t.start();
 				if (Config::getInstance()->isSingleDestMod()) {
@@ -1357,7 +1358,15 @@ void Network::__runOneCloudRound(int cloudType) {    //cloudtype: 0 cloudlet 1 c
 		if (!(*i_user)->isQueueEmpty()) {
 			Package* t_package = (*i_user)->outPackage();
 			int t_dest = t_package->getDestination();
+			if (t_dest < 0) {
+				cout << "wrong destNode, package Id = " << t_package->getId() << endl;
+				continue;
+			}
 			int t_nextNodeId = (*i_user)->getNextNode(t_dest);
+			if (t_nextNodeId < 0) {
+				cout << "wrong nextNode, package Id = " << t_package->getId() << endl;
+				continue;
+			}
 			Node* j = m_nodes.at(t_nextNodeId);
 			j->inPackage(t_package, cloudType);
 			//float t_sigtime = (*i)->getPerTransSignalDelay();

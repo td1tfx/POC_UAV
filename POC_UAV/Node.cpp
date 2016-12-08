@@ -333,7 +333,7 @@ void Node::generatePaPerRound(int destType) { //0: GWdest, 1:randomOuterDest
 void Node::generatePackage(int destType, int dest, float nodeTime) {  //0: GWdest, 1:randomOuterDest
 	int pid = m_id * Config::getInstance()->gerMaxPacNumPerNode() + m_packageCount + 1;
 	Package *m_package = new Package(pid, m_nodeTime);
-	if (dest = -1) {
+	if (dest == -1) {
 		dest = m_id;
 		if (destType == 0) {
 			dest = m_GWNum;
@@ -743,7 +743,7 @@ void Node::inPackage(Package* in_package, int recType) {//type: 0, cloudlet, 1, 
 				}
 			}
 			else if (this->p_type == type_cloud) {
-				generatePackage(0,in_package->getSource(),in_package->getGenerateTime());
+				generatePackage(-1,in_package->getSource(),in_package->getGenerateTime());
 				in_package->setTerminalTime(m_nodeTime);
 				m_qFinished.push(in_package);
 			}
