@@ -1,5 +1,5 @@
 #pragma once
-#include "libconvert.h"
+#include "lib/libconvert.h"
 #include <string.h>
 
 class MNISTFunctions

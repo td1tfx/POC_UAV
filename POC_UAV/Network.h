@@ -45,7 +45,9 @@ private:
 	void __getNodesLoad();
 	bool __getShortestPath(int destId, int type = 0);
 	bool __getShortestPath(Node* t_node, int type = 0);
+	void __getTrainedPath(int destId);
 	void __runOneRound();
+	void __runOneRoundWithTrain();
 	void __runOneCloudRound(int cloudType = 0);
 	void __userMoving(int movingType = 0, int recType = 0);
 	venue* getNearestVenue(Node *t_node);
@@ -74,9 +76,11 @@ public:
 	void printWrongCount();
 	void getAllShortestPath();
 	void getAllTypeShortestPath();
+	void getAllTrainedPath();
 	void initTrainNet(int trainType = 0);
 	void getAllCHbyDP();
 	void runRounds(int num);
+	void runRoundsWithTrain(int num);
 	void runCloudRounds(int num);
 	void runCloudletRounds(int num);
 	void runUserMovingRounds(int num);
@@ -84,6 +88,7 @@ public:
 	void updatePribyRandom();
 	void saveDelay(bool isTrained = false, double genarateRate = 1, int recordType = 0);
 	void saveRouting(bool clean = false, int dataType = 0);
+	void saveRoutingWrongCount(bool clean);
 	int trainNet(int trainType = 0);
 	int getValidNumber();
 

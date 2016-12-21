@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "INIReader.h"
+#include "neural/lib/INIReader.h"
 
 struct NetworkOption
 {

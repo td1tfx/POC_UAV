@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#include "neural/lib/stdafx.h"
 #include "Config.h"
 
 Config* Config::m_config;

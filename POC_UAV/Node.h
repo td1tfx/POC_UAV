@@ -11,7 +11,7 @@
 #include "boost/graph/edge_list.hpp"
 #include "boost/graph/dijkstra_shortest_paths.hpp"
 #include <time.h>
-#include "Timer.h"
+#include "neural/lib/Timer.h"
 #include <corecrt_io.h>
 #include <direct.h>
 #include "venue.h"
@@ -143,6 +143,7 @@ public:
 	int getPackageNum() { return m_qServe.size();}
 	int getNextNode(int dest) {	return m_shortRouting->getData(dest, 0); }
 	int getFinalPacNum() { return m_pacNum;	}
+	int getOutputCount() { return m_outputCount; }
 	bool& getIsGW() { return m_isGW; }
 	bool& isOuterNode() { return m_isOuterNode; }
 	bool isQueueEmpty() { return m_qServe.empty(); }
@@ -164,6 +165,7 @@ public:
 	d_matrix* getOCMatrix() { return m_OCMatrix; }
 	d_matrix*& getRoutingMatrix() { return m_routingMatrix; }
 	d_matrix*& getShortPath() {	return m_shortRouting;	}
+	d_matrix*& getTrainPath() { return m_trainRoutingMatrix; }
 	vector<Node*>& getNeigherNodes() { return m_neigherNodes; }
 	vector<Edge>& getEdges() { return m_edges; }
 	vector<int*>& getCHMatrix() { return m_CHMatrix; }

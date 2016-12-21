@@ -995,6 +995,155 @@ void Network::getAllShortestPath() {
 	__getNodesLoad();
 }
 
+void Network::getAllTrainedPath() {
+
+	vector<Node*>::iterator i;
+	__getNodesLoad();
+	totalPCount = 0;
+	wrongPCount = 0;
+	int inputGroupCount = 1;
+	int outputNodeCount = m_outerNodes.at(0)->getOutputCount();
+	auto t_output = new double[outputNodeCount*inputGroupCount];
+	auto t_Soutput = new double[sqrt(outputNodeCount)*inputGroupCount];
+	for (i = m_outerNodes.begin(); i != m_outerNodes.end(); i++) {
+		(*i)->getRoutingMatrix()->initData(0);
+		(*i)->getTrainPath()->initData(-1);
+		if (Config::getInstance()->isSingleDestMod()) {
+			if (Config::getInstance()->isSingleOutputMod()) {
+				for (int j = 0; j < m_nodes.size(); j++) {
+					Node* t_node = *i;
+					if (m_nodes.at(j)->isOuterNode()) {
+						totalPCount++;
+					}
+					int count = 0;
+					bool isbreak = false;
+					int t_id = 0;
+					while (t_node->getId() != j && isbreak == false) {
+						count++;
+						int pid = t_node->getId();
+						t_node->getNet(j).resetGroupCount(inputGroupCount);
+						t_node->getNet(j).activeOutputValue((*i)->getInData(), t_Soutput, inputGroupCount);
+						for (int n = 0; n < m_nodes.size(); n++) {
+							int r = t_Soutput[n];
+							if (t_Soutput[n] > 0.5) {
+								(*i)->getTrainPath()->getData(j, t_id) = n;
+								t_node = m_nodes.at(n);
+								t_id++;
+								break;
+							}
+						}
+						if (count > m_nodes.size()) {
+							for (int q = 0; q < m_nodes.size(); q++) {
+								int p = (*i)->getShortPath()->getData(j, q);
+								(*i)->getTrainPath()->getData(j, q) = p;
+								if (p == j) { break; }
+							}
+							if (m_nodes.at(j)->isOuterNode()) {
+								wrongPCount++;
+							}
+							isbreak = true;
+						}
+					}
+				}
+			}
+			else {
+				for (int j = 0; j < m_nodes.size(); j++) {
+					(*i)->getNet(j).resetGroupCount(inputGroupCount);
+					//(*i)->getNet(j).InputNodeCount = m_nodes->size();
+					//(*i)->getNet(j).OutputNodeCount = outputNodeCount;
+					(*i)->getNet(j).activeOutputValue((*i)->getInData(), t_Soutput, inputGroupCount);
+					for (int n = 0; n < m_nodes.size(); n++) {
+						if (t_Soutput[n] > 0.5) {
+							(*i)->getRoutingMatrix()->getData(j, n) = 1;
+						}
+						else {
+							(*i)->getRoutingMatrix()->getData(j, n) = 0;
+						}
+					}
+				}
+			}
+		}
+		else {
+			(*i)->getNet(0).resetGroupCount(inputGroupCount);
+			(*i)->getNet(0).activeOutputValue((*i)->getInData(), t_output, inputGroupCount);
+			for (int m = 0; m < m_nodes.size(); m++) {
+				for (int n = 0; n < m_nodes.size(); n++) {
+					if (t_output[m + n*m_nodes.size()] > 0.5) {
+						(*i)->getRoutingMatrix()->getData(m, n) = 1;
+					}
+					else {
+						(*i)->getRoutingMatrix()->getData(m, n) = 0;
+					}
+				}
+			}
+		}
+		/*
+		cout << "node:" << (*i)->getId() << ":";
+		for (int m = 0; m < m_nodes->size(); m++) {
+		for (int n = 0; n < m_nodes->size(); n++) {
+		cout << "-" << (*i)->getRoutingMatrix()->getData(m, n);
+		}
+		}
+		cout << endl;
+		*/
+	}
+	delete[] t_output;
+	if (Config::getInstance()->isSingleOutputMod()) {
+	}
+	else {
+		for (i = m_outerNodes.begin(); i != m_outerNodes.end(); i++) {
+			__getTrainedPath((*i)->getId());
+		}
+	}
+}
+
+void Network::__getTrainedPath(int destId) {
+// 	pair<vertex_iter, vertex_iter> vp;
+// 	for (vp = vertices(*m_dGraph); vp.first != vp.second; ++vp.first) {
+// 		Node* t_node = m_nodes.at(node_index[*vp.first]);
+// 		if (node_index[*vp.first] == destId || !t_node->isOuterNode()) {
+// 			//j
+// 		}
+// 		else {
+// 			int p = node_index[*vp.first];
+// 			Vertex pV = *vp.first;
+// 			int sourceNode = p;
+// 			string linkId = toString(sourceNode);
+// 			adj_iter ai, ai_end;
+// 			int num = 0;
+// 			int count = 0;
+// 			while (p != destId) {
+// 				for (tie(ai, ai_end) = adjacent_vertices(pV, *m_dGraph); ai != ai_end; ++ai) {
+// 					int nextNode = node_index[*ai];
+// 					int isPath = t_node->getRoutingMatrix()->getData(destId, nextNode);
+// 					if (isPath == 1) {
+// 						p = node_index[*ai];
+// 						pV = *ai;
+// 						t_node->getTrainPath()->getData(destId, num) = p;
+// 						linkId = linkId + "->" + toString(p);
+// 						num++;
+// 						break;
+// 					}
+// 					else {}
+// 				}
+// 				count++;
+// 				if (count > m_nodes.size()) {
+// 					linkId = toString(sourceNode);
+// 					for (int i = 0; i < m_nodes.size(); i++) {
+// 						p = t_node->getShortPath()->getData(destId, i);
+// 						linkId = linkId + "->" + toString(p);
+// 						t_node->getTrainPath()->getData(destId, i) = p;
+// 						if (p == destId) { break; }
+// 					}
+// 					wrongPCount++;
+// 				}
+// 			}
+// 			totalPCount++;
+// 			//cout << "node=" << node_index[*vp.first] << ";dest=" << destId << ";path=" << linkId << endl;
+// 		}
+// 	}
+}
+
 void Network::getAllTypeShortestPath() {
 	__updateNeighborGraph();
 	vector<Node*>::iterator i;
@@ -1250,6 +1399,13 @@ void Network::runRounds(int num) {
 	//cout << "run round:" << num << " finisid!" << endl;
 }
 
+void Network::runRoundsWithTrain(int num) {
+	for (int i = 0; i < num; i++) {
+		__runOneRoundWithTrain();
+	}
+	//cout << "run round:" << num << " finisid!" << endl;
+}
+
 void Network::runCloudRounds(int num) {
 	for (int i = 0; i < num; i++) {
 		__runOneCloudRound(1);
@@ -1262,6 +1418,44 @@ void Network::runCloudletRounds(int num) {
 		__runOneCloudRound(0);
 	}
 	//cout << "run round:" << num << " finisid!" << endl;
+}
+
+void Network::__runOneRoundWithTrain() {
+	vector<Node*>::iterator i;
+	float t_minTime = 9999999999;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		if ((*i)->getNodeTime() > m_cuTime) {
+			continue;
+		}
+		if ((*i)->isOuterNode()) {
+			(*i)->generatePaPerRound(1);
+		}
+		if (!(*i)->isQueueEmpty()) {
+			Package* t_package = (*i)->outPackage();
+			int t_dest = t_package->getDestination();
+			int t_nextNodeId = t_package->getNextNode();
+			int t_sourceNodeId = (*i)->getId();
+			if (t_nextNodeId<0 || t_nextNodeId>m_nodes.size() || (*i)->getDistance(*m_nodes.at(t_nextNodeId)) > IR[0]) {
+				t_nextNodeId = (*i)->getNextNode(t_dest);
+				//cout << "traind path is wrong!" << endl;
+			}
+			Node* j = m_nodes.at(t_nextNodeId);
+			j->inPackage(t_package, true);
+			if (t_package->isSignaling()) {
+				(*i)->getNodeTime() += (*i)->getPerTransSignalDelay();
+			}
+			else {
+				(*i)->getNodeTime() += (*i)->getPerTransDelay();
+			}
+		}
+		else {
+			(*i)->getNodeTime() += (*i)->getPerTransDelay();
+		}
+		if (t_minTime >= (*i)->getNodeTime()) {
+			t_minTime = (*i)->getNodeTime();
+		}
+	}
+	m_cuTime = t_minTime;
 }
 
 void Network::runUserMovingRounds(int num) {
@@ -1563,6 +1757,36 @@ int Network::getValidNumber() {
 	cout << "totalNumber = " << m_users.size()<<endl;
 	cout << "validNumber " << validNumber << endl;
 		return validNumber;
+}
+
+void Network::saveRoutingWrongCount(bool clean)
+{
+
+	char* wrongCountFile = "wrongCount.txt";
+	FILE *fout = stdout;
+	if (wrongCountFile)
+		if (clean) {
+			fout = fopen(wrongCountFile, "w+t");
+			fprintf(fout, "cuTime:");
+			fprintf(fout, "\t");
+			fprintf(fout, "totalPCount:");
+			fprintf(fout, "\t");
+			fprintf(fout, "wrongPCount");
+			fprintf(fout, "\n");
+			fprintf(fout, "---------------------------------------\n");
+		}
+		else {
+			fout = fopen(wrongCountFile, "a+t");
+			fprintf(fout, "%1.2f", m_cuTime);
+			fprintf(fout, "\t");
+			fprintf(fout, "%d", totalPCount);
+			fprintf(fout, "\t");
+			fprintf(fout, "%d", wrongPCount);
+			fprintf(fout, "\n");
+		}
+
+		if (wrongCountFile)
+			fclose(fout);
 }
 
 string Network::toString(int a)
