@@ -1732,7 +1732,7 @@ void Network::saveRouting(bool clean, int dataType) {
 
 venue* Network::getNearestVenue(Node *t_node) {
 	float minDistance = 999999999;
-	venue* t_venue;
+	venue* t_venue = nullptr;
 	vector<venue*>::iterator i_ve;
 	for (i_ve = m_venues.begin(); i_ve != m_venues.end(); i_ve++) {
 		float t_distance = sqrt(pow((*i_ve)->getX() - t_node->getX(), 2) + pow((*i_ve)->getY() - t_node->getY(), 2) + pow((*i_ve)->getZ() - t_node->getZ(), 2));

@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
 
 	//doPOC();
 	doRecommendation();
-	doCloudletRecommendation();
+	//doCloudletRecommendation();
 	//Routing();
 	//doUserCheck();
 	system("pause");
