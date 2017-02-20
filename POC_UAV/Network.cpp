@@ -1503,6 +1503,14 @@ void Network::__userMoving(int movingType, int recType) { // MovingType:0 normal
 	}
 }
 
+void Network::timeSynchronise() {
+	vector<Node*>::iterator i;
+	float t_minTime = 9999999999;
+	for (i = m_nodes.begin(); i != m_nodes.end(); i++) {
+		(*i)->getNodeTime() = m_cuTime;
+	}
+}
+
 void Network::__runOneRound() {
 	vector<Node*>::iterator i;
 	float t_minTime = 9999999999;
@@ -1691,7 +1699,7 @@ void Network::saveDelay(bool isTrained, double genarateRate, int recordType) {	/
 	cout << "ganerateRate = " << genarateRate << endl;
 	cout << "averageDelay = " << averageDelay << endl;
 	cout << "averageOnehopDelay = " << averageOnehopDelay << endl;
-	cout << "throughputPerSecend = " << throughputPerSecend << endl;
+	cout << "throughputPerSecend = " << throughputPerSecend*8/1024 << endl;
 	cout << "totalSignalPacNum = " << totalSpacNum << endl;
 
 }

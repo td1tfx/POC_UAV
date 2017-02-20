@@ -14,9 +14,9 @@ void Routing();
 int main(int argc, char *argv[]) {
 
 	//doPOC();
-	doRecommendation();
+	//doRecommendation();
 	//doCloudletRecommendation();
-	//Routing();
+	Routing();
 	//doUserCheck();
 	system("pause");
 	return argc;
@@ -80,6 +80,11 @@ void doPOC(){
 	net->getAllShortestPath();
 	net->updatePribyLoad();
 	net->runPOCGame(1, false);
+
+	//run rounds
+	getTrainData(net, Config::getInstance()->getMaxGenerateRate());
+
+
 	// 	for (int i = 0; i < tolNum; i++) {
 	// 		net->runRounds(1);
 	// 		net->getAllShortestPath();
@@ -154,8 +159,8 @@ void Routing()
 	//Config::getInstance()->resetMaxGenerateRate(rate);
 	//net->initTrainNet(1);
 	//choose one 
-	runTrainedPath(net, rate);
-	//getTrainData(net, rate);         
+	//runTrainedPath(net, rate);
+	getTrainData(net, rate);         
 	//getTestData(topology);
 	//net->trainNet(1);
 	//topology->testNet();
@@ -188,15 +193,27 @@ void getTrainData(Network* network, double geRate) {
 	network->isTrained = false;
 	network->getAllShortestPath();
 	network->runRounds(10);
-	network->saveRouting(true);
+	//network->saveRouting(true);
 	int cuRound = 0;
 	int maxRound = Config::getInstance()->getRound();
 	while (cuRound < maxRound) {
+		//for the CAtime
+		/*
+		if (cuRound !=0 && cuRound % 6000 == 0) {
+			int CARound = (200 + (Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow() - 9) * 15)*(Config::getInstance()->getMaxColumn()*Config::getInstance()->getMaxRow()*Config::getInstance()->getPackageSize());
+			//cuRound += CAtime;
+			float CATime = CARound*((float)Config::getInstance()->getPackageSize() / (float)Config::getInstance()->getBandwidth());
+			network->getCuTime() += CATime;
+			network->timeSynchronise();
+			//continue;
+		}
+		*/
 		network->runRounds(10);
 		network->getAllShortestPath();
-		network->saveRouting(false);
+		//network->saveRouting(false);
 		cuRound++;
 	}
+	//The overall data packet generating rate in the considered network is 16.32 Mb / s.
 	network->saveDelay(false, geRate, 0);
 
 	cout << "train finalTime=" << network->getCuTime() << endl;

@@ -61,7 +61,7 @@ public:
 	Network();
 	~Network();
 
-	float getCuTime() { return m_cuTime; }
+	float& getCuTime() { return m_cuTime; }
 
 	void runPOC(int num);
 	void runNormal();
@@ -86,6 +86,7 @@ public:
 	void runUserMovingRounds(int num);
 	void updatePribyLoad();
 	void updatePribyRandom();
+	void timeSynchronise();
 	void saveDelay(bool isTrained = false, double genarateRate = 1, int recordType = 0);
 	void saveRouting(bool clean = false, int dataType = 0);
 	void saveRoutingWrongCount(bool clean);
